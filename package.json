@@ -1,0 +1,19 @@
+{
+  "name": "mpsdigital",
+  "version": "0.1.0",
+  "description": "Verwaltungssystem für Lehrkräfte und Schüler im Projektunterricht",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wunst/mPSdigital.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Wunst/mPSdigital/issues"
+  },
+  "homepage": "https://github.com/Wunst/mPSdigital#readme"
+}

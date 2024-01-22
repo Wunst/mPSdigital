@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Wunst/mPSdigital/issues"
   },
-  "homepage": "https://github.com/Wunst/mPSdigital#readme"
+  "homepage": "https://github.com/Wunst/mPSdigital#readme",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
 }

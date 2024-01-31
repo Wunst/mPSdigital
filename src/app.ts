@@ -1,25 +1,31 @@
 import express from 'express';
 import { AppDataSource } from './data-source';
 import { User } from './user';
+import bodyParser from 'body-parser';
 
 const port = 3001;
 
 const app = express();
 
-app.get('/login', async (req, res) => {
+app.use(bodyParser.json());
+
+app.post('/login', async (req, res) => {
     const user = await User.findOneBy({ username: req.body['username'] });
     if (!user) {
         res.statusCode = 401;
         res.end();
+        return;
     }
 
     if (user?.password != req.body['password']) {
         res.statusCode = 401;
         res.end();
+        return;
     }
 
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/json');
+    res.setHeader('Content-Type', 'application/json');
+    res.end('{}');
 });
 
 AppDataSource.initialize()

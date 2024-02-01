@@ -1,4 +1,5 @@
 import express from 'express';
+import session from 'express-session';
 import { AppDataSource } from './data-source';
 import { User } from './user';
 import bodyParser from 'body-parser';
@@ -11,6 +12,12 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use(cors());
+
+app.use(session({
+    secret: 'my secret', // TODO: Replace with real secret
+    resave: false,
+    saveUninitialized: false
+}));
 
 app.post('/login', async (req, res) => {
     const user = await User.findOneBy({ username: req.body['username'] });

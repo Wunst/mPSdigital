@@ -27,27 +27,26 @@ app.use(session({
 
 app.post('/login', async (req, res) => {
     const user = await User.findOneBy({ username: req.body['username'] });
+    
     if (!user) {
-        res.statusCode = 401;
-        res.end();
+        res.status(401).end();
         return;
     }
 
     if (user?.password != req.body['password']) {
-        res.statusCode = 401;
-        res.end();
+        res.status(401).end();
         return;
     }
 
     req.session.regenerate(() => {
         req.session.userId = user.id;
-        res.redirect('/');
+        res.status(200).end();
     });
 });
 
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
-        res.redirect('/login');
+        res.status(200).end();
     });
 });
 

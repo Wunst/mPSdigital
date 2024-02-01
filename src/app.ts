@@ -5,6 +5,12 @@ import { User } from './user';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
+declare module 'express-session' {
+    interface SessionData {
+        userId: number;
+    }
+}
+
 const port = 3001;
 
 const app = express();
@@ -33,9 +39,10 @@ app.post('/login', async (req, res) => {
         return;
     }
 
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end('{}');
+    req.session.regenerate(() => {
+        req.session.userId = user.id;
+        res.redirect('/');
+    });
 });
 
 AppDataSource.initialize()

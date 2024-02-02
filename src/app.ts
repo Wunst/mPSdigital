@@ -1,15 +1,20 @@
 import express from 'express';
 import session from 'express-session';
 import { AppDataSource } from './data-source';
-import { User } from './user';
+import { Role, User } from './user';
+import auth from './auth';
+import user from './user';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import bcrypt from 'bcrypt';
+import { BaseEntity, DataSource } from 'typeorm';
 
 declare module 'express-session' {
     interface SessionData {
         userId: number;
     }
 }
+
 
 const port = 3001;
 
@@ -25,30 +30,13 @@ app.use(session({
     saveUninitialized: false
 }));
 
-app.post('/login', async (req, res) => {
-    const user = await User.findOneBy({ username: req.body['username'] });
-    
-    if (!user) {
-        res.status(401).end();
-        return;
-    }
+app.post('/login', auth.login);
+app.get('/logout', auth.logout);
 
-    if (user?.password != req.body['password']) {
-        res.status(401).end();
-        return;
-    }
+app.post('/changePassword', user.changePassword);
+app.post('/resetPassword', user.resetPassword);
 
-    req.session.regenerate(() => {
-        req.session.userId = user.id;
-        res.status(200).end();
-    });
-});
-
-app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.status(200).end();
-    });
-});
+app.post('/createUser', user.createUser);
 
 AppDataSource.initialize()
     .then(() => {

@@ -1,5 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { AppDataSource } from './data-source';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 export enum Role {
     student = 'student',
@@ -12,6 +11,7 @@ export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
+    @Index({ unique: true })
     @Column()
     username!: string;
 

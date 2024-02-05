@@ -1,0 +1,46 @@
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, JoinColumn, OneToMany, ManyToMany,JoinTable } from 'typeorm';
+import { AppDataSource } from '../data-source';
+import { Student} from "./student"
+import { SpecialParentalConsent} from "./specialParentalConsent"
+import { Excursion} from "./excursion"
+
+export enum Project {
+    mPS = 'mPS',
+    Herausforderung = 'Herausforderung'
+}
+
+
+@Entity()
+export class Group extends BaseEntity {
+    @PrimaryGeneratedColumn()
+    id!: number;
+
+    @Column()
+    name!: string;
+
+    @Column()
+    onlinePinboard!: string;
+
+    @Column({
+        type: "enum",
+        enum: Project,
+        default: Project.mPS
+    })
+    project!: Project;
+
+    @Column()
+    startDate!: Date;
+
+    @Column()
+    endDate!: Date;
+
+    @OneToMany(() => SpecialParentalConsent, (specialParentalConsent) => specialParentalConsent.group)
+    specialParentalConsent!: SpecialParentalConsen[]
+
+    @ManyToMany(() => Student)
+    @JoinTable()
+    student!: Student[]
+
+    @OneToMany(() => Excursion, (excursion) => excursion.group)
+    excursion!: Excursion[]
+};

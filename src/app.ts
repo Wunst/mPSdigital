@@ -1,13 +1,11 @@
 import express from 'express';
 import session from 'express-session';
+import bodyParser from 'body-parser';
+import cors, { CorsOptions } from 'cors';
+
 import { AppDataSource } from './data-source';
-import { Role, User } from './user';
 import auth from './auth';
 import user from './user';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import bcrypt from 'bcrypt';
-import { BaseEntity, DataSource } from 'typeorm';
 
 declare module 'express-session' {
     interface SessionData {
@@ -15,6 +13,23 @@ declare module 'express-session' {
     }
 }
 
+let cors_set: CorsOptions = {};
+
+if (process.env['NODE_ENV'] === 'development') {
+    console.warn("\n\nDANGER: Running in a development environment. \
+Will pretend ALL connections are secure.\n\n");
+
+    Object.defineProperty(express.request, 'secure', {
+        get() {
+            return true;
+        }
+    });
+
+    cors_set = {
+        origin: 'http://localhost:8080',
+        credentials: true,
+    };
+}
 
 const port = 3001;
 
@@ -22,12 +37,17 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.use(cors());
+app.use(cors(cors_set));
 
 app.use(session({
     secret: 'my secret', // TODO: Replace with real secret
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000, // TODO: Server side expiry
+        sameSite: 'none',
+        secure: true,
+    }
 }));
 
 app.post('/login', auth.login);
@@ -35,7 +55,6 @@ app.get('/logout', auth.logout);
 
 app.post('/changePassword', user.changePassword);
 app.post('/resetPassword', user.resetPassword);
-
 app.post('/createUser', user.createUser);
 
 AppDataSource.initialize()

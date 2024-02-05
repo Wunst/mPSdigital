@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, JoinColumn, OneToMany, ManyToMany,JoinTable } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { Student} from "./student"
 import { SpecialParentalConsent} from "./specialParentalConsent"
@@ -35,7 +35,7 @@ export class Group extends BaseEntity {
     endDate!: Date;
 
     @OneToMany(() => SpecialParentalConsent, (specialParentalConsent) => specialParentalConsent.group)
-    specialParentalConsent!: SpecialParentalConsen[]
+    specialParentalConsent!: SpecialParentalConsent[]
 
     @ManyToMany(() => Student)
     @JoinTable()

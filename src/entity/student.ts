@@ -32,5 +32,5 @@ export class Student extends BaseEntity {
     generalParentalConsent!: boolean;
 
     @OneToMany(() => SpecialParentalConsent, (specialParentalConsent) => specialParentalConsent.student)
-    specialParentalConsent!: SpecialParentalConsen[]
+    specialParentalConsent!: SpecialParentalConsent[]
 };

@@ -4,11 +4,11 @@ import { Student} from "./student"
 
 
 @Entity()
-export class Class extends BaseEntity {
+export class StudentClass extends BaseEntity {
     @PrimaryColumn()
     name!: string;
 
-    @OneToMany(() => Student, (student) => student.class)
+    @OneToMany(() => Student, (student) => student.studentClass)
     student!: Student[]
 
     @Column()

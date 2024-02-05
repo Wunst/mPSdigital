@@ -2,7 +2,7 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColum
 import { AppDataSource } from '../data-source';
 import { User } from "../user"
 import { Group} from "./group"
-import { Class} from "./class"
+import { StudentClass} from "./studentClass"
 import { SpecialParentalConsent} from "./specialParentalConsent"
 
 
@@ -21,8 +21,8 @@ export class Student extends BaseEntity {
     @JoinTable()
     group!: Group[]
 
-    @ManyToOne(() => Class, (class) => class.student)
-    class: Class
+    @ManyToOne(() => StudentClass, (studentClass) => studentClass.student)
+    studentClass!: StudentClass;
 
     @OneToOne(() => User)
     @JoinColumn()

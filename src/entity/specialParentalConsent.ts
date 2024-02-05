@@ -10,8 +10,8 @@ export class SpecialParentalConsent extends BaseEntity {
     id!: number;
 
     @ManyToOne(() => Student, (student) => student.specialParentalConsent)
-    student: Student
+    student!: Student
 
     @ManyToOne(() => Group, (group) => group.specialParentalConsent)
-    group: Group
+    group!: Group
 };

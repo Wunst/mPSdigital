@@ -22,7 +22,7 @@ export class User extends BaseEntity {
     password!: string;
 
     @Column({
-        type: "enum",
+        type: 'simple-enum',
         enum: Role,
         default: Role.student
     })

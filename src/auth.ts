@@ -35,10 +35,9 @@ async function login(req: express.Request, res: express.Response) {
 
     req.session.regenerate(() => {
         req.session.userId = user.id;
-        if(req.body['password'] == user.username){
-            res.status(200).send('You must change the password').end();
-        }
-        res.status(200).end();
+        res.status(200).json({
+            mustChangePassword: req.body['password'] === user.username
+        }).end();
     });
 }
 

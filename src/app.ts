@@ -50,6 +50,8 @@ app.use(session({
     }
 }));
 
+app.get('/', auth.status);
+
 app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 

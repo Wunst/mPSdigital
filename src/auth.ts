@@ -3,13 +3,18 @@ import bcrypt from 'bcrypt';
 import { User } from './user';
 
 async function login(req: express.Request, res: express.Response) {
+    if (!req.body['username'] || !req.body['password']) {
+        res.status(400).end();
+        return;
+    }
+
     const user = await User.findOneBy({ username: req.body['username'] });
     if (!user) {
         res.status(401).end();
         return;
     }
 
-    const authorized = await bcrypt.compare(req.body['password'], user?.password);
+    const authorized = await bcrypt.compare(req.body['password'], user.password);
     if (!authorized) {
         res.status(401).end();
         return;
@@ -31,7 +36,7 @@ function logout(req: express.Request, res: express.Response) {
 }
 
 async function getSession(req: express.Request): Promise<User | null> {
-    return await User.findOneBy({ id: req.session.userId });
+    return req.session.userId ? await User.findOneBy({ id: req.session.userId }) : null;
 }
 
 export default { login, logout, getSession };

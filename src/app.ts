@@ -53,7 +53,7 @@ app.use(session({
 app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 
-app.post('/changePassword', user.changePassword);
+// app.post('/changePassword', user.changePassword);
 app.post('/resetPassword', user.resetPassword);
 app.post('/createUser', user.createUser);
 

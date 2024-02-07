@@ -56,9 +56,20 @@ async function changePassword(req: express.Request, res: express.Response) {
 }
 
 async function resetPassword(req: express.Request, res: express.Response) {
+    if (!req.body['username']) {
+        res.status(400).end();
+        return;
+    }
+
     const user = await User.findOneBy({ username: req.body['username'] });
+
     const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
     
+    // TODO: Don't show whether a user exists to unprivileged users
     // User does not exist
     if (!user) {
         res.status(404).end();
@@ -66,8 +77,8 @@ async function resetPassword(req: express.Request, res: express.Response) {
     }
 
     // Not allowed to reset the password
-    if(loggedInUser?.role == Role.student || (user.role == Role.admin && loggedInUser?.role != Role.admin)) {
-        res.status(401).end();
+    if(loggedInUser?.role == Role.student || (user.role != Role.student && loggedInUser?.role != Role.admin)) {
+        res.status(403).end();
         return;
     }
     
@@ -75,20 +86,32 @@ async function resetPassword(req: express.Request, res: express.Response) {
         { username: req.body['username'] },
         { password: await hashPassword(req.body['username']) }
     );
+
+    res.status(200).end();
 }
 
 async function createUser(req: express.Request, res: express.Response) {
+    if (!req.body['username'] || !req.body['role'] || !(req.body['role'] in Role)) {
+        res.status(400).end();
+        return;
+    }
+
     const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    // Not allowed to create new user
+    if((loggedInUser?.role == Role.teacher && !(req.body['role'] == 'student')) ||
+        loggedInUser?.role == Role.student) {
+        res.status(403).end();
+        return;
+    }
     
     // User already exist
     if(await User.findOneBy({ username: req.body['username']})){
         res.status(409).send('User exists').end();
-        return;
-    }
-    
-    // Not allowed to create new user
-    if((loggedInUser?.role == Role.teacher && !(req.body['role'] == 'student')) || loggedInUser?.role == Role.student) {
-        res.status(401).end();
         return;
     }
 

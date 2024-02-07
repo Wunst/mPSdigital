@@ -55,6 +55,8 @@ app.get('/', auth.status);
 app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 
+app.get('/users', user.list);
+
 // app.post('/changePassword', user.changePassword);
 app.post('/resetPassword', user.resetPassword);
 app.post('/createUser', user.createUser);

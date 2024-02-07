@@ -33,6 +33,24 @@ async function hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 12);
 }
 
+async function list(req: express.Request, res: express.Response) {
+    const session = await auth.getSession(req);
+
+    if (!session) {
+        res.status(401).end();
+        return;
+    }
+
+    if (session.role === 'student') {
+        res.status(403).end();
+        return;
+    }
+    
+    res.status(200).json({
+        users: await User.find({ select: [ 'username', 'role' ] })
+    }).end();
+}
+
 async function changePassword(req: express.Request, res: express.Response) {
     const user = await User.findOneBy({ username: req.body['username'] });
     const loggedInUser = await auth.getSession(req);
@@ -124,4 +142,4 @@ async function createUser(req: express.Request, res: express.Response) {
     res.status(201).end();
 }
 
-export default { changePassword, resetPassword, createUser};
+export default { list, changePassword, resetPassword, createUser };

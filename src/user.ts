@@ -52,25 +52,30 @@ async function list(req: express.Request, res: express.Response) {
 }
 
 async function changePassword(req: express.Request, res: express.Response) {
-    const user = await User.findOneBy({ username: req.body['username'] });
-    const loggedInUser = await auth.getSession(req);
-    
-    // User does not exist
-    if (!user) {
-        res.status(404).end();
+    if (!req.body['old'] || !req.body['new']) {
+        res.status(400).end();
         return;
     }
 
-    // Not allowed to change password
-    if(!(loggedInUser?.id == user.id)) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
         res.status(401).end();
+        return;
+    }
+
+    // Check old password
+    const authorized = await bcrypt.compare(req.body['old'], loggedInUser.password);
+    if (!authorized) {
+        res.status(403).end();
         return;
     }
     
     await User.update(
-        { username: req.body['username'] },
-        { password: await hashPassword(req.body['password']) }
+        { username: loggedInUser.username },
+        { password: await hashPassword(req.body['new']) }
     );
+
+    res.status(200).end();
 }
 
 async function resetPassword(req: express.Request, res: express.Response) {

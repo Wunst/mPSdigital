@@ -11,14 +11,8 @@ export class Student extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
-    firstName!: string;
-
-    @Column()
-    lastName!: string;
-
     @ManyToMany(() => Group)
-    @JoinTable()
+    @JoinTable  ()
     group!: Group[]
 
     @ManyToOne(() => Form, (form) => form.student)

@@ -5,7 +5,6 @@ import { Form } from './entity/form';
 import { Group } from './entity/group';
 import { SpecialParentalConsent } from './entity/specialParentalConsent';
 import { Student } from './entity/student';
-import { Teacher } from './entity/teacher';
 
 export const AppDataSource = new DataSource({
     type: 'postgres',

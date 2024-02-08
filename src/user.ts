@@ -1,5 +1,6 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable} from 'typeorm';
 import { AppDataSource } from './data-source';
+import { Form } from './entity/form';
 
 export enum Role {
     student = 'student',
@@ -30,4 +31,8 @@ export class User extends BaseEntity {
         default: Role.student
     })
     role!: Role;
+
+    @ManyToMany(() => Form)
+    @JoinTable()
+    form!: Form[]
 };

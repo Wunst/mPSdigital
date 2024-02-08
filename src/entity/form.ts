@@ -1,6 +1,7 @@
-import { BaseEntity, Entity, Column, OneToMany, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Entity, Column, PrimaryColumn, ManyToMany, JoinTable } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { Student} from "./student"
+import { User } from '../user';
 
 
 @Entity()
@@ -8,8 +9,9 @@ export class Form extends BaseEntity {
     @PrimaryColumn()
     name!: string;
 
-    @OneToMany(() => Student, (student) => student.form)
-    student!: Student[]
+    @ManyToMany(() => User)
+    @JoinTable()
+    user!: User[]
 
     @Column()
     mPSYear!: string;

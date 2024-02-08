@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, ManyToOne, OneToMany, ManyToMany, JoinTable} from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany, ManyToMany, JoinTable} from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { User } from "../user"
 import { Group} from "./group"
@@ -14,9 +14,6 @@ export class Student extends BaseEntity {
     @ManyToMany(() => Group)
     @JoinTable  ()
     group!: Group[]
-
-    @ManyToOne(() => Form, (form) => form.student)
-    form!: Form;
 
     @OneToOne(() => User)
     @JoinColumn()

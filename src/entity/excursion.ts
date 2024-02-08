@@ -21,7 +21,7 @@ export class Excursion extends BaseEntity {
     description!: string;
 
     @Column({
-        type: "enum",
+        type: "simple-enum",
         enum: Status,
         default: Status.beantragt
     })

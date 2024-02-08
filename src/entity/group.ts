@@ -22,7 +22,7 @@ export class Group extends BaseEntity {
     onlinePinboard!: string;
 
     @Column({
-        type: "enum",
+        type: "simple-enum",
         enum: Project,
         default: Project.mPS
     })

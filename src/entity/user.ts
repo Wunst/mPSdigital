@@ -1,7 +1,7 @@
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import auth from './auth';
+import auth from '../auth';
 
 export enum Role {
     student = 'student',

@@ -1,5 +1,8 @@
 import { DataSource } from 'typeorm';
-import { User } from './user';
+import { User } from './entity/user';
+import { Student } from './entity/student';
+import { Form } from './entity/form';
+import { Group } from './entity/group';
 
 let AppDataSource: DataSource;
 

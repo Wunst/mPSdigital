@@ -5,7 +5,7 @@ import cors, { CorsOptions } from 'cors';
 
 import { AppDataSource } from './data-source';
 import auth from './auth';
-import user from './user';
+import user from './entity/user';
 
 declare module 'express-session' {
     interface SessionData {

@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { User } from './user';
+import { User } from './entity/user';
 
 async function status(req: express.Request, res: express.Response) {
     const user = await getSession(req);

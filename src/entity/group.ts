@@ -55,15 +55,18 @@ async function createGroup(req: express.Request, res: express.Response) {
         return;
     }
 
-    if(!(loggedInUser.role == Role.student)){
+    // memorise student
+    const loggedInStudent = await Student.findOne({relations: {user: true}, where: {user: {id: loggedInUser.id}}});
+    if(!(loggedInStudent)){
         res.status(403).end();
     }
     
-    // TODO: helpful to memorise the loggedin student?
-    const loggedInStudent = await Student.findOneBy({relations: {user: true}, where: {user: {id: loggedInUser.id}}});
-
     // TODO: do not allow to create new group, if student is in a active group
-    if(loggedInStudent?.group: Group.findOneBy(endDate: MoreThan(Date.now()))){
+    // if(loggedInStudent?.group: Group.findOne(loggedInStudent.group.endDate: MoreThan(Date.now()))){
+    //     res.status(403).end();
+    // }
+
+    if(await Group.findOne({relations: {student: true}, where: {student: {id: loggedInStudent.id}, endDate: MoreThan(Date.now())}})){
         res.status(403).end();
     }
 
@@ -96,8 +99,8 @@ async function createGroup(req: express.Request, res: express.Response) {
     });
 
     // TODO: Add the relation between student and group
-    loggedInStudent.group = [await Group.findOneBy({ name: req.body['name']})];
-     // loggedInStudent.group.push(await Group.findOneBy({ name: req.body['name']}));
+    //loggedInStudent.group = [await Group.findOneBy({ name: req.body['name']})];
+     loggedInStudent.group.push(await Group.findOneBy({ name: req.body['name']}));
 
     res.status(201).end();
 }

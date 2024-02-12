@@ -4,7 +4,7 @@ import express from 'express';
 import auth from '../auth';
 import { Role } from './user';
 
-export enum Project {
+export enum ProjectType {
     mPS = 'mPS',
     Herausforderung = 'Herausforderung'
 }
@@ -23,10 +23,10 @@ export class Group extends BaseEntity {
 
     @Column({
         type: "simple-enum",
-        enum: Project,
-        default: Project.mPS
+        enum: ProjectType,
+        default: ProjectType.mPS
     })
-    project!: Project;
+    projectType!: ProjectType;
 
     @Column()
     startDate!: Date;
@@ -41,8 +41,8 @@ export class Group extends BaseEntity {
 
 
 async function createGroup(req: express.Request, res: express.Response) {
-    if (!req.body['name'] || !req.body['project'] ||
-        !(req.body['project'] in Project)) {
+    if (!req.body['name'] || !req.body['projectType'] ||
+        !(req.body['projectType'] in ProjectType)) {
         res.status(400).end();
         return;
     }
@@ -73,7 +73,7 @@ async function createGroup(req: express.Request, res: express.Response) {
     const result = await Group.insert({
         name: req.body['name'],
         startDate: new Date(),
-        project: req.body['project']
+        projectType: req.body['projectType']
     });
 
     // TODO: Add the relation between student and group

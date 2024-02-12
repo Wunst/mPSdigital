@@ -1,11 +1,8 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, DataSource, MoreThan } from 'typeorm';
-import { AppDataSource } from '../data-source';
-import { Student} from "./student"
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, And } from 'typeorm';
+import { Student } from "./student"
 import express from 'express';
-import { Role, User } from './user';
 import auth from '../auth';
-import { group } from 'console';
-import { findSourceMap } from 'module';
+import { Role } from './user';
 
 export enum Project {
     mPS = 'mPS',
@@ -44,7 +41,8 @@ export class Group extends BaseEntity {
 
 
 async function createGroup(req: express.Request, res: express.Response) {
-    if (!req.body['name'] || !req.body['project'] || !(req.body['project'] in Group)) {
+    if (!req.body['name'] || !req.body['project'] ||
+        !(req.body['project'] in Project)) {
         res.status(400).end();
         return;
     }
@@ -55,54 +53,34 @@ async function createGroup(req: express.Request, res: express.Response) {
         return;
     }
 
-    // memorise student
-    const loggedInStudent = await Student.findOne({relations: {user: true}, where: {user: {id: loggedInUser.id}}});
-    if(!(loggedInStudent)){
-        res.status(403).end();
-    }
-    
-    // TODO: do not allow to create new group, if student is in a active group
-    // if(loggedInStudent?.group: Group.findOne(loggedInStudent.group.endDate: MoreThan(Date.now()))){
-    //     res.status(403).end();
-    // }
-
-    if(await Group.findOne({relations: {student: true}, where: {student: {id: loggedInStudent.id}, endDate: MoreThan(Date.now())}})){
-        res.status(403).end();
-    }
-
-    // if(await Student.findOne({
-    //     relations: {
-    //         group: true
-    //     },
-    //     where: {
-    //         student: {
-    //             id: loggedInStudent.id
-    //         },
-    //         group: {
-    //             endDate: MoreThan(Date.now())
-    //         },
-    //     },
-    // })){
-    //     res.status(403).end();
-    // }
-    
-    // Group already exist
-    if(await Group.findOneBy({ name: req.body['name']})){
-        res.status(409).send('Group exists').end();
+    if (loggedInUser.role !== Role.student) {
+        res.status(401).end();
         return;
     }
 
-    await Group.insert({
+    // memorise student
+    const loggedInStudent = await Student.findOneBy({ user: loggedInUser });
+    if(!loggedInStudent){
+        res.status(403).end();
+        return;
+    }
+
+    if(loggedInStudent.group.find(group => group.endDate >= new Date())) {
+        res.status(403).end();
+        return;
+    }
+
+    const result = await Group.insert({
         name: req.body['name'],
-        startDate: Date.now(),
-        project : req.body['project']
+        startDate: new Date(),
+        project: req.body['project']
     });
 
     // TODO: Add the relation between student and group
     //loggedInStudent.group = [await Group.findOneBy({ name: req.body['name']})];
-     loggedInStudent.group.push(await Group.findOneBy({ name: req.body['name']}));
+    //loggedInStudent.group.push(await Group.findOneBy({ name: req.body['name']}));
 
     res.status(201).end();
 }
 
-    export default { createGroup };
+export default { createGroup };

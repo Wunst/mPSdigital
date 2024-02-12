@@ -14,7 +14,10 @@ if (process.env['NODE_ENV'] === 'production') {
         username: 'mpsdigital',
         database: 'mpsdigital',
         entities: [
-            User
+            User,
+            Form,
+            Student,
+            Group
         ]
     });
 } else {
@@ -22,7 +25,10 @@ if (process.env['NODE_ENV'] === 'production') {
         type: 'sqlite',
         database: 'testing.sqlite',
         entities: [
-            User
+            User,
+            Form,
+            Student,
+            Group
         ]
     });
 }

@@ -31,12 +31,18 @@ export class Group extends BaseEntity {
     @Column()
     startDate!: Date;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     endDate!: Date;
 
     @ManyToMany(() => Student)
     @JoinTable()
-    student!: Student[]
+    student!: Student[];
+
+    isCurrent(): boolean {
+        return !this.endDate || this.endDate > new Date();
+    }
 };
 
 
@@ -59,13 +65,21 @@ async function createGroup(req: express.Request, res: express.Response) {
     }
 
     // memorise student
-    const loggedInStudent = await Student.findOneBy({ user: loggedInUser });
+    const loggedInStudent = await Student.findOne({
+        relations: {
+            user: true,
+            group: true,
+        },
+        where: {
+            user: loggedInUser
+        }
+    });
     if(!loggedInStudent){
         res.status(403).end();
         return;
     }
 
-    if(loggedInStudent.group.find(group => group.endDate >= new Date())) {
+    if(loggedInStudent.group.find(group => group.isCurrent())) {
         res.status(403).end();
         return;
     }
@@ -73,7 +87,8 @@ async function createGroup(req: express.Request, res: express.Response) {
     const result = await Group.insert({
         name: req.body['name'],
         startDate: new Date(),
-        projectType: req.body['projectType']
+        projectType: req.body['projectType'],
+        onlinePinboard: ''
     });
 
     // TODO: Add the relation between student and group

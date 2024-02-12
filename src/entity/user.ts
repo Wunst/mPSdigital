@@ -2,6 +2,7 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index } from 'typeo
 import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
+import { Student } from './student';
 
 export enum Role {
     student = 'student',
@@ -143,6 +144,13 @@ async function createUser(req: express.Request, res: express.Response) {
         password: await hashPassword(req.body['username']),
         role: req.body['role']
     });
+
+    if (req.body['role'] === Role.student) {
+        await Student.insert({
+            user: (await User.findOneBy({ username: req.body['username'] }))!,
+            generalParentalConsent: false,
+        });
+    }
 
     res.status(201).end();
 }

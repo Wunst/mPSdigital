@@ -3,6 +3,8 @@ import { Student } from "./student"
 import express from 'express';
 import auth from '../auth';
 import { Role } from './user';
+import { DataSource } from 'typeorm';
+import { AppDataSource } from '../data-source';
 
 export enum ProjectType {
     mPS = 'mPS',
@@ -15,7 +17,7 @@ export class Group extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
+    @Column({unique: true})
     name!: string;
 
     @Column()
@@ -36,7 +38,9 @@ export class Group extends BaseEntity {
     })
     endDate!: Date;
 
-    @ManyToMany(() => Student)
+    @ManyToMany(
+        () => Student,
+        student => student.group)
     @JoinTable()
     student!: Student[];
 
@@ -59,30 +63,36 @@ async function createGroup(req: express.Request, res: express.Response) {
         return;
     }
 
-    if (loggedInUser.role !== Role.student) {
-        res.status(401).end();
+    // unique name of the group
+    if(await Group.findOneBy({name: req.body['name']})){
+        res.status(409).end();
         return;
     }
 
     // memorise student
-    const loggedInStudent = await Student.findOne({
-        relations: {
-            user: true,
-            group: true,
-        },
-        where: {
-            user: loggedInUser
+    let loggedInStudent;
+    if (loggedInUser.role === Role.student) {
+       loggedInStudent = await Student.findOne({
+            relations: {
+                user: true,
+                group: true,
+            },
+            where: {
+                user: loggedInUser
+            }
+        });
+        // TODO: right statuscode for contradiction (role student, but no student entry)?
+        if(!loggedInStudent){
+            res.status(403).end();
+            return;
         }
-    });
-    if(!loggedInStudent){
-        res.status(403).end();
-        return;
+
+        if(loggedInStudent.group.find(group => group.isCurrent())) {
+            res.status(403).end();
+            return;
+        }
     }
 
-    if(loggedInStudent.group.find(group => group.isCurrent())) {
-        res.status(403).end();
-        return;
-    }
 
     const result = await Group.insert({
         name: req.body['name'],
@@ -91,10 +101,15 @@ async function createGroup(req: express.Request, res: express.Response) {
         onlinePinboard: ''
     });
 
-    // TODO: Add the relation between student and group
-    //loggedInStudent.group = [await Group.findOneBy({ name: req.body['name']})];
-    //loggedInStudent.group.push(await Group.findOneBy({ name: req.body['name']}));
 
+    if(loggedInStudent !== null){
+        await AppDataSource
+            .createQueryBuilder()
+            .relation(Student, "group")
+            .of(loggedInStudent)
+            .add(Group.findOneBy({name: req.body['name']}))
+        
+    }
     res.status(201).end();
 }
 

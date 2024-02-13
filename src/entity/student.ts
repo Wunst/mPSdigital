@@ -3,6 +3,7 @@ import { AppDataSource } from '../data-source';
 import { User } from "./user"
 import { Group} from "./group"
 import { Form} from "./form"
+import { group } from 'console';
 
 
 @Entity()
@@ -10,8 +11,8 @@ export class Student extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @ManyToMany(() => Group)
-    @JoinTable  ()
+    @ManyToMany(() => Group,
+    group => group.student)
     group!: Group[]
 
     @OneToOne(() => User)

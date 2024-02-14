@@ -2,7 +2,7 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColum
 import { AppDataSource } from '../data-source';
 import { User } from "./user"
 import { Group} from "./group"
-import { Form} from "./form"
+import { SpecialParentalConsent } from './specialParentalConsent';
 
 
 @Entity()
@@ -20,4 +20,8 @@ export class Student extends BaseEntity {
 
     @Column()
     generalParentalConsent!: boolean;
+
+    @OneToMany(() => SpecialParentalConsent,
+    specialParentalConsent => specialParentalConsent.student)
+    specialParentalConsent!: SpecialParentalConsent
 };

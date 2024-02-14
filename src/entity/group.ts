@@ -147,13 +147,19 @@ async function informationsGroup(req: express.Request, res: express.Response) {
         return;
     }
 
+    const user :number[] = [];
+    for (let index = 0; index < group.student.length; index++) {
+        const student = group.student[index];
+        user.push(student.user.id);
+    }
+
     res.status(200).json({
         name: group.name,
         onlinePinnwand: group.onlinePinboard,
         ProjectType: group.projectType,
         startDate: group.startDate,
         endDate: group.endDate,
-        student: group.student
+        user: user
     }).end();
 }
 

@@ -57,6 +57,7 @@ app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 
 app.get('/users', user.list);
+app.get('/userInformation', user.information);
 
 app.get('/informationsGroup', group.informationsGroup);
 

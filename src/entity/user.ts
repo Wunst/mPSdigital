@@ -5,6 +5,7 @@ import auth from '../auth';
 import { Student } from './student';
 import { userInfo } from 'os';
 import { Form } from './form';
+import { SpecialParentalConsent } from './specialParentalConsent';
 
 export enum Role {
     student = 'student',
@@ -61,6 +62,49 @@ async function list(req: express.Request, res: express.Response) {
     res.status(200).json({
         users: await User.find({ select: [ 'username', 'role' ] })
     }).end();
+}
+
+async function information(req: express.Request, res: express.Response) {
+    if (!req.body['id']) {
+        res.status(400).end();
+        return;
+    }
+    
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    const user = await User.findOneBy({id: req.body['id']});
+    if (!user) {
+        res.status(404).end();
+        return;
+    }
+
+    if(loggedInUser?.role == Role.student && user.id !== loggedInUser.id) {
+        res.status(403).end();
+        return;
+    }
+
+    if (user.student && req.body['group']) {
+        res.status(200).json({
+            username: user.username,
+            role: user.role,
+            form: user.form,
+            generalParentalConsent: user.student.generalParentalConsent,
+            specialParentalConsent: await SpecialParentalConsent.findOne({
+                relations: {group: true, student: true},
+                where: {group: req.body['group'], student: user.student}
+            }),
+        }).end();
+    }else{
+        res.status(200).json({
+            username: user.username,
+            role: user.role,
+            form: user.form,
+        }).end();
+    }
 }
 
 async function changePassword(req: express.Request, res: express.Response) {
@@ -166,4 +210,4 @@ async function createUser(req: express.Request, res: express.Response) {
     res.status(201).end();
 }
 
-export default { list, changePassword, resetPassword, createUser };
+export default { list, information, changePassword, resetPassword, createUser };

@@ -147,35 +147,13 @@ async function informationsGroup(req: express.Request, res: express.Response) {
         return;
     }
 
-    const studentName: string[] = [];
-    const studentGeneralParentalConsent: boolean[] = [];
-    const studentSpecialParentalConsent: boolean[] = [];
-    const studentClass: string[] = [];
-    for (let index = 0; index < group.student.length; index++) {
-        const student = group.student[index];
-        let specialParentalConsent = false;
-        if(await SpecialParentalConsent.findOne({
-            relations: {group: true, student: true},
-            where: {group: group, student: student}
-        })){
-            specialParentalConsent = true;
-        }
-        studentName.push(student.user.username);
-        studentGeneralParentalConsent.push(student.generalParentalConsent);
-        studentSpecialParentalConsent.push(specialParentalConsent);
-        studentClass.push(student.user.form[0].name);
-    }
-
     res.status(200).json({
         name: group.name,
         onlinePinnwand: group.onlinePinboard,
         ProjectType: group.projectType,
         startDate: group.startDate,
         endDate: group.endDate,
-        studentName: studentName,
-        studentGeneralParentalConsent: studentGeneralParentalConsent,
-        studentSpecialParentalConsent: studentSpecialParentalConsent,
-        studentClass: studentClass
+        student: group.student
     }).end();
 }
 

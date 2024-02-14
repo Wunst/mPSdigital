@@ -9,7 +9,8 @@ export class Form extends BaseEntity {
     @PrimaryColumn()
     name!: string;
 
-    @ManyToMany(() => User)
+    @ManyToMany(() => User,
+    user => user.form)
     @JoinTable()
     user!: User[]
 

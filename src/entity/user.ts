@@ -1,8 +1,10 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, OneToOne, JoinColumn, ManyToMany } from 'typeorm';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
 import { Student } from './student';
+import { userInfo } from 'os';
+import { Form } from './form';
 
 export enum Role {
     student = 'student',
@@ -28,6 +30,15 @@ export class User extends BaseEntity {
         default: Role.student
     })
     role!: Role;
+
+    @OneToOne(() => Student,
+    student => student.user)
+    @JoinColumn()
+    student!: Student;
+
+    @ManyToMany(() => Form,
+    form => form.user)
+    form!: Form[]
 };
 
 async function hashPassword(password: string): Promise<string> {

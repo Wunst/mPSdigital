@@ -2,9 +2,10 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTab
 import { Student } from "./student"
 import express from 'express';
 import auth from '../auth';
-import { Role } from './user';
+import { Role, User } from './user';
 import { DataSource } from 'typeorm';
 import { AppDataSource } from '../data-source';
+import { group } from 'console';
 
 export enum ProjectType {
     mPS = 'mPS',
@@ -117,4 +118,53 @@ async function createGroup(req: express.Request, res: express.Response) {
     res.status(201).end();
 }
 
-export default { createGroup };
+async function informationsGroup(req: express.Request, res: express.Response) {
+    if (!req.body['id']) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser?.role == Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    const group = await Group.findOneBy({id: req.body['id']});
+
+    if(!group) {
+        res.status(401).end();
+        return;
+    }
+
+    const studentName: string[] = [];
+    const studentGeneralParentalConsent: boolean[] = [];
+    const studentSpecialParentalConsent: boolean[] = [];
+    const studentClass: string[] = [];
+    for (let index = 0; index < group.student.length; index++) {
+        const student = group.student[index];
+        studentName.push(student.user.username);
+        studentGeneralParentalConsent.push(student.generalParentalConsent);
+        studentSpecialParentalConsent.push();
+        studentClass.push(student.user.form[0].name);
+    }
+
+    res.status(200).json({
+        name: group.name,
+        onlinePinnwand: group.onlinePinboard,
+        ProjectType: group.projectType,
+        startDate: group.startDate,
+        endDate: group.endDate,
+        studentName: studentName,
+        studentGeneralParentalConsent: studentGeneralParentalConsent,
+        studentSpecialParentalConsent: studentSpecialParentalConsent,
+        studentClass: studentClass
+    }).end();
+}
+
+export default { createGroup, informationsGroup };

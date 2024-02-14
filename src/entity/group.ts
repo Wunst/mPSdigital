@@ -17,7 +17,9 @@ export class Group extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({unique: true})
+    @Column(
+ //       {unique: true}
+        )
     name!: string;
 
     @Column()
@@ -64,10 +66,10 @@ async function createGroup(req: express.Request, res: express.Response) {
     }
 
     // unique name of the group
-    if(await Group.findOneBy({name: req.body['name']})){
-        res.status(409).end();
-        return;
-    }
+    // if(await Group.findOneBy({name: req.body['name']})){
+    //     res.status(409).end();
+    //     return;
+    // }
 
     // memorise student
     let loggedInStudent;
@@ -100,14 +102,16 @@ async function createGroup(req: express.Request, res: express.Response) {
         projectType: req.body['projectType'],
         onlinePinboard: ''
     });
-
+    
 
     if(loggedInStudent !== null){
         await AppDataSource
             .createQueryBuilder()
             .relation(Student, "group")
             .of(loggedInStudent)
-            .add(Group.findOneBy({name: req.body['name']}))
+// TODO: test, if it works
+            .add(result.identifiers[0])
+//          .add(Group.findOneBy({name: req.body['name']}))
         
     }
     res.status(201).end();

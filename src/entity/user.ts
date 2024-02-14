@@ -87,16 +87,20 @@ async function information(req: express.Request, res: express.Response) {
         return;
     }
 
-    if (user.student && req.body['group']) {
+    if (user.student && req.body['groupId']) {
+        let specialParentalConsent = false;
+        if(await SpecialParentalConsent.findOne({
+            relations: {group: true, student: true},
+            where: {group: req.body['groupID'], student: user.student}
+        })){
+            specialParentalConsent = true;
+        }
         res.status(200).json({
             username: user.username,
             role: user.role,
             form: user.form,
             generalParentalConsent: user.student.generalParentalConsent,
-            specialParentalConsent: await SpecialParentalConsent.findOne({
-                relations: {group: true, student: true},
-                where: {group: req.body['group'], student: user.student}
-            }),
+            specialParentalConsent: specialParentalConsent,
         }).end();
     }else{
         res.status(200).json({

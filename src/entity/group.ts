@@ -156,7 +156,7 @@ async function informationsGroup(req: express.Request, res: express.Response) {
     res.status(200).json({
         name: group.name,
         onlinePinnwand: group.onlinePinboard,
-        ProjectType: group.projectType,
+        projectType: group.projectType,
         startDate: group.startDate,
         endDate: group.endDate,
         user: user

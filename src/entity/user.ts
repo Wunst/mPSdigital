@@ -1,10 +1,9 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, OneToOne, JoinColumn, ManyToMany } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, JoinTable, OneToOne } from 'typeorm';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
-import { Student } from './student';
-import { userInfo } from 'os';
 import { Form } from './form';
+import { Student } from './student';
 import { SpecialParentalConsent } from './specialParentalConsent';
 
 export enum Role {
@@ -38,7 +37,11 @@ export class User extends BaseEntity {
 
     @ManyToMany(() => Form,
     form => form.user)
+    @JoinTable()
     form!: Form[]
+
+    @Column()
+    allForms!: boolean;
 };
 
 async function hashPassword(password: string): Promise<string> {

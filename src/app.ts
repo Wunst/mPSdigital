@@ -67,6 +67,7 @@ app.post('/createUser', user.createUser);
 
 app.post('/createGroup', group.createGroup);
 app.put('/joinGroup', group.join);
+app.get('/group', group.groupList);
 
 AppDataSource.initialize()
     .then(() => {

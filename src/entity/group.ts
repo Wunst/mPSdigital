@@ -1,9 +1,8 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany} from 'typeorm';
 import { Student } from "./student"
 import express from 'express';
 import auth from '../auth';
 import { Role, User } from './user';
-import { DataSource } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, Any, In, MoreThan, IsNull, Or } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { group } from 'console';
 import { SpecialParentalConsent } from './specialParentalConsent';
@@ -56,6 +55,42 @@ export class Group extends BaseEntity {
     specialParentalConsent => specialParentalConsent.group)
     specialParentalConsent!: SpecialParentalConsent
 };
+
+async function groupList(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if (loggedInUser.role === Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    let groups : Group[] = [];
+
+    if (!loggedInUser.allForms) {
+        for (let index = 0; index < loggedInUser.form.length; index++) {
+            const form = loggedInUser.form[index];
+            Group.find({
+                relations: {
+                    student: { user: true }
+                },
+                where: {
+                    student: { user: { form } },
+                    endDate: Or(MoreThan(new Date()), IsNull())
+                }});
+            groups.push();
+        }
+    }else{
+       groups = await Group.find();
+    }
+
+    res.status(200).json({
+        groups,
+    }).end();
+}
 
 
 async function createGroup(req: express.Request, res: express.Response) {
@@ -221,4 +256,4 @@ async function join(req: express.Request, res: express.Response) {
     res.status(200).end();
 }
 
-export default { createGroup, informationsGroup, join };
+export default { groupList, createGroup, informationsGroup, join };

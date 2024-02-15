@@ -40,6 +40,9 @@ export class User extends BaseEntity {
     @ManyToMany(() => Form,
     form => form.user)
     form!: Form[]
+
+    @Column()
+    changedPassword!: boolean;
 };
 
 async function hashPassword(password: string): Promise<string> {
@@ -134,6 +137,8 @@ async function changePassword(req: express.Request, res: express.Response) {
         { username: loggedInUser.username },
         { password: await hashPassword(req.body['new']) }
     );
+
+    loggedInUser.changedPassword = true;
 
     res.status(200).end();
 }

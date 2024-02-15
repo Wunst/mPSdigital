@@ -163,4 +163,52 @@ async function informationsGroup(req: express.Request, res: express.Response) {
     }).end();
 }
 
-export default { createGroup, informationsGroup };
+async function join(req: express.Request, res: express.Response) {
+    const { username, group } = req.body;
+    if(!username || !group) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    const foundGroup = await Group.findOneBy({ id: group });
+    const foundUser = await User.findOneBy({ username });
+    if(!foundGroup || !foundUser) {
+        res.status(404).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student && foundUser !== loggedInUser) {
+        res.status(403).end();
+        return;
+    }
+
+    const student = await Student.findOne({
+        relations: {
+            user: true,
+            group: true,
+        },
+        where: {
+            user: foundUser
+        }
+    });
+
+    if(!student) {
+        res.status(403).end();
+        return;
+    }
+
+    if(student.group.find(group => group.endDate > new Date())) {
+        res.status(409).end();
+        return;
+    }
+
+    student.group.push(foundGroup);
+}
+
+export default { createGroup, informationsGroup, join };

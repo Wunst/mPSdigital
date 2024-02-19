@@ -183,7 +183,7 @@ async function join(req: express.Request, res: express.Response) {
         return;
     }
 
-    if(loggedInUser.role === Role.student && foundUser !== loggedInUser) {
+    if(loggedInUser.role === Role.student && foundUser.id !== loggedInUser.id) {
         res.status(403).end();
         return;
     }
@@ -203,12 +203,22 @@ async function join(req: express.Request, res: express.Response) {
         return;
     }
 
-    if(student.group.find(group => group.endDate > new Date())) {
+    if(
+        !foundGroup.isCurrent() ||
+        student.group.find(group => group.id === foundGroup.id) ||
+        student.group.find(group => group.isCurrent())
+    ) {
         res.status(409).end();
         return;
     }
 
-    student.group.push(foundGroup);
+    await AppDataSource
+        .createQueryBuilder()
+        .relation(Student, "group")
+        .of(student)
+        .add(group);
+
+    res.status(200).end();
 }
 
 export default { createGroup, informationsGroup, join };

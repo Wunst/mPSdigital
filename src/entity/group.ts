@@ -1,9 +1,9 @@
 import { Student } from "./student"
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, Any, In, MoreThan, IsNull, Or } from 'typeorm';
+import { AppDataSource } from '../data-source';
 import express from 'express';
 import auth from '../auth';
 import { Role, User } from './user';
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, Any, In, MoreThan, IsNull, Or } from 'typeorm';
-import { AppDataSource } from '../data-source';
 import { group } from 'console';
 import { SpecialParentalConsent } from './specialParentalConsent';
 

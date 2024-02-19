@@ -1,5 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-import { AppDataSource } from '../data-source';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Student} from "./student"
 import { Group} from "./group"
 
@@ -11,9 +10,11 @@ export class SpecialParentalConsent extends BaseEntity {
 
     @ManyToOne(() => Student,
     student => student.specialParentalConsent)
+    @JoinColumn()
     student!: Student
 
     @ManyToOne(() => Group,
     group => group.specialParentalConsent)
+    @JoinColumn()
     group!: Group
 };

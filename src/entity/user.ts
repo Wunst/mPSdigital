@@ -34,7 +34,6 @@ export class User extends BaseEntity {
 
     @OneToOne(() => Student,
     student => student.user)
-    @JoinColumn()
     student!: Student;
 
     @ManyToMany(() => Form,

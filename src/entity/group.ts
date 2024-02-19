@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, Any, In, MoreThan } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, Any, In, MoreThan, IsNull, Or } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import express from 'express';
 import { Student} from "./student"
@@ -59,17 +59,22 @@ async function groupList(req: express.Request, res: express.Response) {
     if (!loggedInUser.allForms) {
         for (let index = 0; index < loggedInUser.form.length; index++) {
             const form = loggedInUser.form[index];
-    // TODO: find where one of the students is in the form (how to express that one arrayentry has to fit?)
-            Group.find({relations: {student: {user: true}}, where: {student.user.form: form, endDate: MoreThan(newDate())}});
+            Group.find({
+                relations: {
+                    student: { user: true }
+                },
+                where: {
+                    student: { user: { form } },
+                    endDate: Or(MoreThan(new Date()), IsNull())
+                }});
             groups.push();
         }
     }else{
-    // TODO: store the array of all groups
-       groups = Group.find();
+       groups = await Group.find();
     }
 
     res.status(200).json({
-        groups: groups,
+        groups,
     }).end();
 }
 

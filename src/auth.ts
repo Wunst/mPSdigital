@@ -57,7 +57,14 @@ function logout(req: express.Request, res: express.Response) {
 }
 
 async function getSession(req: express.Request): Promise<User | null> {
-    return req.session.userId ? await User.findOneBy({ id: req.session.userId }) : null;
+    return req.session.userId ? await User.findOne({
+        relations: {
+            form: true,
+        },
+        where: {
+            id: req.session.userId
+        }
+    }) : null;
 }
 
 export default { status, login, logout, getSession };

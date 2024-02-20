@@ -73,17 +73,16 @@ async function groupList(req: express.Request, res: express.Response) {
     if (!loggedInUser.allForms) {
         for (let index = 0; index < loggedInUser.form.length; index++) {
             const form = loggedInUser.form[index];
-            Group.find({
+            groups = await Group.find({
                 relations: {
-                    student: { user: true }
+                    student: { user: { form: true } }
                 },
                 where: {
                     student: { user: { form } },
                     endDate: Or(MoreThan(new Date()), IsNull())
                 }});
-            groups.push();
         }
-    }else{
+    } else {
        groups = await Group.find();
     }
 

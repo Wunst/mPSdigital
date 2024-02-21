@@ -147,12 +147,12 @@ export async function changePassword(req: express.Request, res: express.Response
 }
 
 export async function resetPassword(req: express.Request, res: express.Response) {
-    if (!req.body['username']) {
+    if (!req.params['username']) {
         res.status(400).end();
         return;
     }
 
-    const user = await User.findOneBy({ username: req.body['username'] });
+    const user = await User.findOneBy({ username: req.params['username'] });
 
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
@@ -174,15 +174,15 @@ export async function resetPassword(req: express.Request, res: express.Response)
     }
     
     await User.update(
-        { username: req.body['username'] },
-        { password: await hashPassword(req.body['username']), changedPassword: false }
+        { username: req.params['username'] },
+        { password: await hashPassword(req.params['username']) }
     );
 
     res.status(200).end();
 }
 
 export async function create(req: express.Request, res: express.Response) {
-    if (!req.body['username'] || !req.body['role'] || !(req.body['role'] in Role)) {
+    if (!req.params['username'] || !req.body['role'] || !(req.body['role'] in Role)) {
         res.status(400).end();
         return;
     }
@@ -201,21 +201,20 @@ export async function create(req: express.Request, res: express.Response) {
     }
     
     // User already exist
-    if(await User.findOneBy({ username: req.body['username']})){
+    if(await User.findOneBy({ username: req.params['username']})){
         res.status(409).send('User exists').end();
         return;
     }
 
     await User.insert({
-        username: req.body['username'],
-        password: await hashPassword(req.body['username']),
-        role: req.body['role'],
-        changedPassword: false,
+        username: req.params['username'],
+        password: await hashPassword(req.params['username']),
+        role: req.body['role']
     });
 
     if (req.body['role'] === Role.student) {
         await Student.insert({
-            user: (await User.findOneBy({ username: req.body['username'] }))!,
+            user: (await User.findOneBy({ username: req.params['username'] }))!,
             generalParentalConsent: false,
         });
     }

@@ -20,7 +20,8 @@ async function status(req: express.Request, res: express.Response) {
     res.status(200).json({
         username: user.username,
         role: user.role,
-        hasGroup
+        changedPassword: user.changedPassword,
+        hasGroup,
     }).end();
 }
 

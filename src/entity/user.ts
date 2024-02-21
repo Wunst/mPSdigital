@@ -204,7 +204,8 @@ async function createUser(req: express.Request, res: express.Response) {
     await User.insert({
         username: req.body['username'],
         password: await hashPassword(req.body['username']),
-        role: req.body['role']
+        role: req.body['role'],
+        changedPassword: true,
     });
 
     if (req.body['role'] === Role.student) {

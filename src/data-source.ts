@@ -3,6 +3,7 @@ import { User } from './entity/user';
 import { Student } from './entity/student';
 import { Form } from './entity/form';
 import { Group } from './entity/group';
+import { SpecialParentalConsent } from './entity/specialParentalConsent';
 
 let AppDataSource: DataSource;
 
@@ -14,7 +15,11 @@ if (process.env['NODE_ENV'] === 'production') {
         username: 'mpsdigital',
         database: 'mpsdigital',
         entities: [
-            User
+            User,
+            Form,
+            Student,
+            Group,
+            SpecialParentalConsent
         ]
     });
 } else {
@@ -22,7 +27,11 @@ if (process.env['NODE_ENV'] === 'production') {
         type: 'sqlite',
         database: 'testing.sqlite',
         entities: [
-            User
+            User,
+            Form,
+            Student,
+            Group,
+            SpecialParentalConsent
         ]
     });
 }

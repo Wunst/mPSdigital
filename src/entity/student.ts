@@ -2,7 +2,7 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColum
 import { AppDataSource } from '../data-source';
 import { User } from "./user"
 import { Group} from "./group"
-import { Form} from "./form"
+import { SpecialParentalConsent } from './specialParentalConsent';
 
 
 @Entity()
@@ -10,14 +10,19 @@ export class Student extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @ManyToMany(() => Group)
-    @JoinTable  ()
+    @ManyToMany(() => Group,
+    group => group.student)
     group!: Group[]
 
-    @OneToOne(() => User)
+    @OneToOne(() => User,
+    user => user.student)
     @JoinColumn()
     user!: User;
 
     @Column()
     generalParentalConsent!: boolean;
+
+    @OneToMany(() => SpecialParentalConsent,
+    specialParentalConsent => specialParentalConsent.student)
+    specialParentalConsent!: SpecialParentalConsent
 };

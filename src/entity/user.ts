@@ -1,7 +1,10 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, JoinTable, OneToOne, Tree } from 'typeorm';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
+import { Form } from './form';
+import { Student } from './student';
+import { SpecialParentalConsent } from './specialParentalConsent';
 
 export enum Role {
     student = 'student',
@@ -27,6 +30,18 @@ export class User extends BaseEntity {
         default: Role.student
     })
     role!: Role;
+
+    @OneToOne(() => Student,
+    student => student.user)
+    student!: Student;
+
+    @ManyToMany(() => Form,
+    form => form.user)
+    @JoinTable()
+    form!: Form[]
+
+    @Column()
+    allForms!: boolean;
 };
 
 async function hashPassword(password: string): Promise<string> {
@@ -49,6 +64,53 @@ async function list(req: express.Request, res: express.Response) {
     res.status(200).json({
         users: await User.find({ select: [ 'username', 'role' ] })
     }).end();
+}
+
+async function information(req: express.Request, res: express.Response) {
+    if (!req.body['id']) {
+        res.status(400).end();
+        return;
+    }
+    
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    const user = await User.findOneBy({id: req.body['id']});
+    if (!user) {
+        res.status(404).end();
+        return;
+    }
+
+    if(loggedInUser?.role == Role.student && user.id !== loggedInUser.id) {
+        res.status(403).end();
+        return;
+    }
+
+    if (user.student && req.body['groupId']) {
+        let specialParentalConsent = false;
+        if(await SpecialParentalConsent.findOne({
+            relations: {group: true, student: true},
+            where: {group: req.body['groupID'], student: user.student}
+        })){
+            specialParentalConsent = true;
+        }
+        res.status(200).json({
+            username: user.username,
+            role: user.role,
+            form: user.form,
+            generalParentalConsent: user.student.generalParentalConsent,
+            specialParentalConsent: specialParentalConsent,
+        }).end();
+    }else{
+        res.status(200).json({
+            username: user.username,
+            role: user.role,
+            form: user.form,
+        }).end();
+    }
 }
 
 async function changePassword(req: express.Request, res: express.Response) {
@@ -144,7 +206,14 @@ async function createUser(req: express.Request, res: express.Response) {
         role: req.body['role']
     });
 
+    if (req.body['role'] === Role.student) {
+        await Student.insert({
+            user: (await User.findOneBy({ username: req.body['username'] }))!,
+            generalParentalConsent: false,
+        });
+    }
+
     res.status(201).end();
 }
 
-export default { list, changePassword, resetPassword, createUser };
+export default { list, information, changePassword, resetPassword, createUser };

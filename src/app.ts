@@ -6,6 +6,7 @@ import cors, { CorsOptions } from 'cors';
 import { AppDataSource } from './data-source';
 import auth from './auth';
 import user from './entity/user';
+import group from './entity/group';
 
 declare module 'express-session' {
     interface SessionData {
@@ -56,10 +57,17 @@ app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 
 app.get('/users', user.list);
+app.get('/userInformation', user.information);
+
+app.get('/informationsGroup', group.informationsGroup);
 
 app.post('/changePassword', user.changePassword);
 app.post('/resetPassword', user.resetPassword);
 app.post('/createUser', user.createUser);
+
+app.post('/createGroup', group.createGroup);
+app.put('/joinGroup', group.join);
+app.get('/group', group.groupList);
 
 AppDataSource.initialize()
     .then(() => {

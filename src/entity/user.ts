@@ -135,10 +135,8 @@ async function changePassword(req: express.Request, res: express.Response) {
     
     await User.update(
         { username: loggedInUser.username },
-        { password: await hashPassword(req.body['new']) }
+        { password: await hashPassword(req.body['new']), changedPassword: true }
     );
-
-    loggedInUser.changedPassword = true;
 
     res.status(200).end();
 }
@@ -172,7 +170,7 @@ async function resetPassword(req: express.Request, res: express.Response) {
     
     await User.update(
         { username: req.body['username'] },
-        { password: await hashPassword(req.body['username']) }
+        { password: await hashPassword(req.body['username']), changedPassword: false }
     );
 
     res.status(200).end();

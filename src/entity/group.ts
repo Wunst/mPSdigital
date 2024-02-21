@@ -1,10 +1,9 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany} from 'typeorm';
 import { Student } from "./student"
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, Any, In, MoreThan, IsNull, Or } from 'typeorm';
+import { AppDataSource } from '../data-source';
 import express from 'express';
 import auth from '../auth';
 import { Role, User } from './user';
-import { DataSource } from 'typeorm';
-import { AppDataSource } from '../data-source';
 import { group } from 'console';
 import { SpecialParentalConsent } from './specialParentalConsent';
 
@@ -56,6 +55,36 @@ export class Group extends BaseEntity {
     specialParentalConsent => specialParentalConsent.group)
     specialParentalConsent!: SpecialParentalConsent
 };
+
+async function groupList(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    let groups : Group[] = [];
+
+    if (!loggedInUser.allForms) {
+        for (let index = 0; index < loggedInUser.form.length; index++) {
+            const form = loggedInUser.form[index];
+            groups = await Group.find({
+                relations: {
+                    student: { user: { form: true } }
+                },
+                where: {
+                    student: { user: { form } },
+                    endDate: Or(MoreThan(new Date()), IsNull())
+                }});
+        }
+    } else {
+       groups = await Group.find();
+    }
+
+    res.status(200).json({
+        groups,
+    }).end();
+}
 
 
 async function createGroup(req: express.Request, res: express.Response) {
@@ -163,4 +192,62 @@ async function informationsGroup(req: express.Request, res: express.Response) {
     }).end();
 }
 
-export default { createGroup, informationsGroup };
+async function join(req: express.Request, res: express.Response) {
+    const { username, group } = req.body;
+    if(!username || !group) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    const foundGroup = await Group.findOneBy({ id: group });
+    const foundUser = await User.findOneBy({ username });
+    if(!foundGroup || !foundUser) {
+        res.status(404).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student && foundUser.id !== loggedInUser.id) {
+        res.status(403).end();
+        return;
+    }
+
+    const student = await Student.findOne({
+        relations: {
+            user: true,
+            group: true,
+        },
+        where: {
+            user: foundUser
+        }
+    });
+
+    if(!student) {
+        res.status(403).end();
+        return;
+    }
+
+    if(
+        !foundGroup.isCurrent() ||
+        student.group.find(group => group.id === foundGroup.id) ||
+        student.group.find(group => group.isCurrent())
+    ) {
+        res.status(409).end();
+        return;
+    }
+
+    await AppDataSource
+        .createQueryBuilder()
+        .relation(Student, "group")
+        .of(student)
+        .add(group);
+
+    res.status(200).end();
+}
+
+export default { groupList, createGroup, informationsGroup, join };

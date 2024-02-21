@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import { Role, User } from './entity/user';
-import { And, Equal, IsNull, MoreThan, Or } from 'typeorm';
+import { IsNull, MoreThan, Or } from 'typeorm';
 import { Group } from './entity/group';
 
 async function status(req: express.Request, res: express.Response) {
@@ -12,7 +12,8 @@ async function status(req: express.Request, res: express.Response) {
     }
     
     let hasGroup = false;
-    if(user.role === Role.student && !(Group.findOne({relations:{student: { user: true }}, where: { endDate: Or(MoreThan(new Date()), IsNull()) , student: { user: { id: user.id } } } }))){
+    if(user.role === Role.student &&
+        await Group.findOne({relations:{student: { user: true }}, where: { endDate: Or(MoreThan(new Date()), IsNull()) , student: { user: { id: user.id } } } })){
         hasGroup = true;
     }
 
@@ -57,7 +58,14 @@ function logout(req: express.Request, res: express.Response) {
 }
 
 async function getSession(req: express.Request): Promise<User | null> {
-    return req.session.userId ? await User.findOneBy({ id: req.session.userId }) : null;
+    return req.session.userId ? await User.findOne({
+        relations: {
+            form: true,
+        },
+        where: {
+            id: req.session.userId
+        }
+    }) : null;
 }
 
 export default { status, login, logout, getSession };

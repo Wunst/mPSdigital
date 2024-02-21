@@ -3,6 +3,7 @@ import { User } from './entity/user';
 import { Student } from './entity/student';
 import { Form } from './entity/form';
 import { Group } from './entity/group';
+import { SpecialParentalConsent } from './entity/specialParentalConsent';
 
 let AppDataSource: DataSource;
 
@@ -17,7 +18,8 @@ if (process.env['NODE_ENV'] === 'production') {
             User,
             Form,
             Student,
-            Group
+            Group,
+            SpecialParentalConsent
         ]
     });
 } else {
@@ -28,7 +30,8 @@ if (process.env['NODE_ENV'] === 'production') {
             User,
             Form,
             Student,
-            Group
+            Group,
+            SpecialParentalConsent
         ]
     });
 }

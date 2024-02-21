@@ -16,6 +16,7 @@ export class Student extends BaseEntity {
 
     @OneToOne(() => User,
     user => user.student)
+    @JoinColumn()
     user!: User;
 
     @Column()

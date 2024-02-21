@@ -12,15 +12,12 @@ export enum ProjectType {
     Herausforderung = 'Herausforderung'
 }
 
-
 @Entity()
 export class Group extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column(
- //       {unique: true}
-        )
+    @Column()
     name!: string;
 
     @Column()
@@ -56,7 +53,7 @@ export class Group extends BaseEntity {
     specialParentalConsent!: SpecialParentalConsent
 };
 
-async function groupList(req: express.Request, res: express.Response) {
+export async function list(req: express.Request, res: express.Response) {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
@@ -92,7 +89,7 @@ async function groupList(req: express.Request, res: express.Response) {
 }
 
 
-async function createGroup(req: express.Request, res: express.Response) {
+export async function create(req: express.Request, res: express.Response) {
     if (!req.body['name'] || !req.body['projectType'] ||
         !(req.body['projectType'] in ProjectType)) {
         res.status(400).end();
@@ -149,15 +146,13 @@ async function createGroup(req: express.Request, res: express.Response) {
             .createQueryBuilder()
             .relation(Student, "group")
             .of(loggedInStudent)
-// TODO: test, if it works
-            .add(result.identifiers[0])
-//          .add(Group.findOneBy({name: req.body['name']}))
+            .add(result.identifiers[0]);
         
     }
     res.status(201).end();
 }
 
-async function informationsGroup(req: express.Request, res: express.Response) {
+export async function info(req: express.Request, res: express.Response) {
     if (!req.body['id']) {
         res.status(400).end();
         return;
@@ -197,7 +192,7 @@ async function informationsGroup(req: express.Request, res: express.Response) {
     }).end();
 }
 
-async function join(req: express.Request, res: express.Response) {
+export async function join(req: express.Request, res: express.Response) {
     const { username, group } = req.body;
     if(!username || !group) {
         res.status(400).end();
@@ -254,5 +249,3 @@ async function join(req: express.Request, res: express.Response) {
 
     res.status(200).end();
 }
-
-export default { groupList, createGroup, informationsGroup, join };

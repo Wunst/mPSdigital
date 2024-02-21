@@ -5,8 +5,8 @@ import cors, { CorsOptions } from 'cors';
 
 import { AppDataSource } from './data-source';
 import auth from './auth';
-import user from './entity/user';
-import group from './entity/group';
+import * as user from './entity/user';
+import * as group from './entity/group';
 
 declare module 'express-session' {
     interface SessionData {
@@ -51,23 +51,21 @@ app.use(session({
     }
 }));
 
-app.get('/', auth.status);
-
 app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 
+app.get('/account', auth.status);
+app.post('/account/changePassword', user.changePassword);
+
 app.get('/users', user.list);
-app.get('/userInformation', user.information);
+app.get('/user/:username', user.info);
+app.post('/user/:username', user.create);
+app.post('/user/:username/resetPassword', user.resetPassword);
 
-app.get('/informationsGroup', group.informationsGroup);
-
-app.post('/changePassword', user.changePassword);
-app.post('/resetPassword', user.resetPassword);
-app.post('/createUser', user.createUser);
-
-app.post('/createGroup', group.createGroup);
-app.put('/joinGroup', group.join);
-app.get('/group', group.groupList);
+app.get('/groups', group.list);
+app.get('/group/:id', group.info);
+app.post('/group', group.create);
+app.put('/group/:id/:username', group.join);
 
 AppDataSource.initialize()
     .then(() => {

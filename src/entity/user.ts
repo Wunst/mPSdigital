@@ -48,7 +48,7 @@ async function hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 12);
 }
 
-async function list(req: express.Request, res: express.Response) {
+export async function list(req: express.Request, res: express.Response) {
     const session = await auth.getSession(req);
 
     if (!session) {
@@ -66,7 +66,7 @@ async function list(req: express.Request, res: express.Response) {
     }).end();
 }
 
-async function information(req: express.Request, res: express.Response) {
+export async function info(req: express.Request, res: express.Response) {
     if (!req.body['id']) {
         res.status(400).end();
         return;
@@ -113,7 +113,7 @@ async function information(req: express.Request, res: express.Response) {
     }
 }
 
-async function changePassword(req: express.Request, res: express.Response) {
+export async function changePassword(req: express.Request, res: express.Response) {
     if (!req.body['old'] || !req.body['new']) {
         res.status(400).end();
         return;
@@ -140,7 +140,7 @@ async function changePassword(req: express.Request, res: express.Response) {
     res.status(200).end();
 }
 
-async function resetPassword(req: express.Request, res: express.Response) {
+export async function resetPassword(req: express.Request, res: express.Response) {
     if (!req.body['username']) {
         res.status(400).end();
         return;
@@ -175,7 +175,7 @@ async function resetPassword(req: express.Request, res: express.Response) {
     res.status(200).end();
 }
 
-async function createUser(req: express.Request, res: express.Response) {
+export async function create(req: express.Request, res: express.Response) {
     if (!req.body['username'] || !req.body['role'] || !(req.body['role'] in Role)) {
         res.status(400).end();
         return;
@@ -215,5 +215,3 @@ async function createUser(req: express.Request, res: express.Response) {
 
     res.status(201).end();
 }
-
-export default { list, information, changePassword, resetPassword, createUser };

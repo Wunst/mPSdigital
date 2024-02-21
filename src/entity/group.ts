@@ -90,7 +90,7 @@ export async function list(req: express.Request, res: express.Response) {
 
 
 export async function create(req: express.Request, res: express.Response) {
-    if (!req.body['name'] || !req.body['projectType'] ||
+    if (!req.body['projectType'] ||
         !(req.body['projectType'] in ProjectType)) {
         res.status(400).end();
         return;
@@ -102,11 +102,6 @@ export async function create(req: express.Request, res: express.Response) {
         return;
     }
 
-    // unique name of the group
-    // if(await Group.findOneBy({name: req.body['name']})){
-    //     res.status(409).end();
-    //     return;
-    // }
 
     // memorise student
     let loggedInStudent;
@@ -134,7 +129,7 @@ export async function create(req: express.Request, res: express.Response) {
 
 
     const result = await Group.insert({
-        name: req.body['name'],
+        name: req.params['name'],
         startDate: new Date(),
         projectType: req.body['projectType'],
         onlinePinboard: ''
@@ -152,11 +147,7 @@ export async function create(req: express.Request, res: express.Response) {
     res.status(201).end();
 }
 
-export async function info(req: express.Request, res: express.Response) {
-    if (!req.body['id']) {
-        res.status(400).end();
-        return;
-    }
+export async function info(req: express.Request<{ id: number }>, res: express.Response) {
 
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
@@ -169,7 +160,7 @@ export async function info(req: express.Request, res: express.Response) {
         return;
     }
 
-    const group = await Group.findOneBy({id: req.body['id']});
+    const group = await Group.findOneBy({id: req.params['id']});
 
     if(!group) {
         res.status(401).end();
@@ -192,9 +183,10 @@ export async function info(req: express.Request, res: express.Response) {
     }).end();
 }
 
-export async function join(req: express.Request, res: express.Response) {
-    const { username, group } = req.body;
-    if(!username || !group) {
+export async function join(req: express.Request<{id: number, username: string}>, res: express.Response) {
+    const { id, username } = req.params;
+
+    if(!username || !id) {
         res.status(400).end();
         return;
     }
@@ -205,7 +197,7 @@ export async function join(req: express.Request, res: express.Response) {
         return;
     }
 
-    const foundGroup = await Group.findOneBy({ id: group });
+    const foundGroup = await Group.findOneBy({ id: id });
     const foundUser = await User.findOneBy({ username });
     if(!foundGroup || !foundUser) {
         res.status(404).end();

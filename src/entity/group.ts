@@ -105,14 +105,14 @@ export async function create(req: express.Request, res: express.Response) {
 
 
     const result = await Group.insert({
-        name: req.params['name'],
+        name: req.body['name'],
         startDate: new Date(),
         projectType: req.body['projectType'],
         onlinePinboard: ''
     });
     
 
-    if(loggedInStudent !== null){
+    if(loggedInStudent){
         await AppDataSource
             .createQueryBuilder()
             .relation(Student, "group")

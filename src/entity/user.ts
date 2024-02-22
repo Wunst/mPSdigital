@@ -207,7 +207,7 @@ async function createUser(req: express.Request, res: express.Response) {
         username: req.body['username'],
         password: await hashPassword(req.body['username']),
         role: req.body['role'],
-        changedPassword: true,
+        changedPassword: false,
         allForms: true // TODO
     });
 

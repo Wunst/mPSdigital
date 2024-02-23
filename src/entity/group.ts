@@ -4,7 +4,6 @@ import { AppDataSource } from '../data-source';
 import express from 'express';
 import auth from '../auth';
 import { Role, User } from './user';
-import { group } from 'console';
 import { SpecialParentalConsent } from './specialParentalConsent';
 
 export enum ProjectType {
@@ -63,26 +62,8 @@ async function groupList(req: express.Request, res: express.Response) {
         return;
     }
 
-    let groups : Group[] = [];
-
-    if (!loggedInUser.allForms) {
-        for (let index = 0; index < loggedInUser.form.length; index++) {
-            const form = loggedInUser.form[index];
-            groups = await Group.find({
-                relations: {
-                    student: { user: { form: true } }
-                },
-                where: {
-                    student: { user: { form } },
-                    endDate: Or(MoreThan(new Date()), IsNull())
-                }});
-        }
-    } else {
-       groups = await Group.find();
-    }
-
     res.status(200).json({
-        groups,
+        groups: await Group.find(),
     }).end();
 }
 

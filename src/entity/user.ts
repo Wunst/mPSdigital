@@ -26,8 +26,7 @@ export class User extends BaseEntity {
 
     @Column({
         type: 'simple-enum',
-        enum: Role,
-        default: Role.student
+        enum: Role
     })
     role!: Role;
 
@@ -40,11 +39,15 @@ export class User extends BaseEntity {
     @JoinTable()
     form!: Form[]
 
-    @Column()
+    @Column({
+        default: false
+    })
     changedPassword!: boolean;
 
-    @Column()
-    allForms!: boolean;
+    @Column({
+        default: "{}"
+    })
+    settings!: string;
 };
 
 async function hashPassword(password: string): Promise<string> {
@@ -208,7 +211,6 @@ async function createUser(req: express.Request, res: express.Response) {
         password: await hashPassword(req.body['username']),
         role: req.body['role'],
         changedPassword: false,
-        allForms: true // TODO
     });
 
     if (req.body['role'] === Role.student) {
@@ -221,4 +223,32 @@ async function createUser(req: express.Request, res: express.Response) {
     res.status(201).end();
 }
 
-export default { list, information, changePassword, resetPassword, createUser };
+async function settings(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    res.type('json').send(loggedInUser.settings).end();
+}
+
+async function updateSettings(req: express.Request, res: express.Response) {
+    const settings = JSON.stringify(req.body);
+    if (!settings) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    User.update({ id: loggedInUser.id }, { settings });
+
+    res.status(200).end();
+}
+
+export default { list, information, changePassword, resetPassword, createUser, settings, updateSettings };

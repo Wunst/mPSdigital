@@ -119,21 +119,41 @@ export async function info(req: express.Request, res: express.Response) {
     }
 }
 
-export async function change(req: express.Request, res: express.Response) {
+export async function update(req: express.Request, res: express.Response) {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
         return;
     }
 
-    if(loggedInUser?.role == Role.student || (req.params['username'] != Role.student && loggedInUser?.role != Role.admin)) {
+    if(loggedInUser?.role === Role.student || (req.params['username'] != Role.student && loggedInUser?.role != Role.admin)) {
         res.status(403).end();
         return;
     }
     
     await User.update(
-        { username: req.body['username'] },
-        { role: req.body['role'] }
+        { username: req.params['username'] },
+        { role: req.body['role'], username: req.body['username'] }
+    );
+
+    res.status(200).end();
+
+}
+
+export async function del(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser?.role === Role.student || (req.params['username'] != Role.student && loggedInUser?.role != Role.admin)) {
+        res.status(403).end();
+        return;
+    }
+    
+    await User.delete(
+        { username: req.params['username'] },
     );
 
     res.status(200).end();

@@ -64,6 +64,7 @@ app.post('/account/changePassword', user.changePassword);
 app.get('/users', user.list);
 app.get('/user/:username', user.info);
 app.post('/user/:username', user.create);
+app.patch('/user/:username', user.change)
 app.post('/user/:username/resetPassword', user.resetPassword);
 
 app.get('/groups', group.list);

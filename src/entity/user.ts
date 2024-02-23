@@ -130,6 +130,10 @@ export async function update(req: express.Request, res: express.Response) {
         res.status(403).end();
         return;
     }
+
+    if(!(User.findOneBy({username: req.params['username']}))){
+        res.status(404).end();
+    }
     
     await User.update(
         { username: req.params['username'] },
@@ -150,6 +154,10 @@ export async function del(req: express.Request, res: express.Response) {
     if(loggedInUser?.role === Role.student || (req.params['username'] != Role.student && loggedInUser?.role != Role.admin)) {
         res.status(403).end();
         return;
+    }
+
+    if(!(User.findOneBy({username: req.params['username']}))){
+        res.status(404).end();
     }
     
     await User.delete(

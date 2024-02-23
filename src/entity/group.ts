@@ -6,6 +6,7 @@ import auth from '../auth';
 import { Role, User } from './user';
 import { group } from 'console';
 import { SpecialParentalConsent } from './specialParentalConsent';
+import { Excursion } from "./excursion";
 
 export enum ProjectType {
     mPS = 'mPS',
@@ -50,7 +51,10 @@ export class Group extends BaseEntity {
 
     @OneToMany(() => SpecialParentalConsent,
     specialParentalConsent => specialParentalConsent.group)
-    specialParentalConsent!: SpecialParentalConsent
+    specialParentalConsent!: SpecialParentalConsent;
+
+    @OneToMany(() => Excursion, exc => exc.group)
+    excursions!: Excursion[];
 };
 
 export async function list(req: express.Request, res: express.Response) {

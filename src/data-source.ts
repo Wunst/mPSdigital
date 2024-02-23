@@ -4,6 +4,7 @@ import { Student } from './entity/student';
 import { Form } from './entity/form';
 import { Group } from './entity/group';
 import { SpecialParentalConsent } from './entity/specialParentalConsent';
+import { Excursion } from './entity/excursion';
 
 let AppDataSource: DataSource;
 
@@ -19,7 +20,8 @@ if (process.env['NODE_ENV'] === 'production') {
             Form,
             Student,
             Group,
-            SpecialParentalConsent
+            SpecialParentalConsent,
+            Excursion
         ]
     });
 } else {
@@ -31,7 +33,8 @@ if (process.env['NODE_ENV'] === 'production') {
             Form,
             Student,
             Group,
-            SpecialParentalConsent
+            SpecialParentalConsent,
+            Excursion
         ]
     });
 }

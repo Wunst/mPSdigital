@@ -316,6 +316,7 @@ Status code | Meaning
   "type": "mps | herausforderung",
   "startDate": "date",
   "endDate": "date", // nullable
+  "pinboard": "string",
   "members": [
     "username1",
     "username2"
@@ -344,7 +345,8 @@ Student | ✔️
   "name": "string",
   "type": "mps | herausforderung",
   "startDate": "date",
-  "endDate": "date" // optional
+  "endDate": "date", // optional
+  "pinboard": "string", // optional
 }
 ```
 
@@ -412,3 +414,152 @@ Status code | Meaning
 ----------- | -------
 200         | Student removed
 404         | Student not in group or no group
+
+## Excursion API
+
+### ![GET](https://img.shields.io/badge/GET-green) `/excursions`
+
+List excursions
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ✔️*
+
+*Will only list own excursions
+
+#### Request body
+No data
+
+#### Response
+200
+A JSON array of excursion IDs
+
+### ![GET](https://img.shields.io/badge/GET-green) `/excursion/{id}`
+
+Information about excursion
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ✔️*
+
+*Only own excursions
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+id       | yes      | ID of the excursion
+
+#### Request body
+No data
+
+#### Response
+Status code | Meaning
+----------- | -------
+200         | Response includes excursion info (see below)
+404         | No excursion with ID
+
+200
+```json
+{
+  "id": "number",
+  "group": "number",
+  "date": "date",
+  "description": "string",
+  "state": "pending | accepted | denied"
+}
+```
+
+### ![POST](https://img.shields.io/badge/POST-blue) `/excursion`
+
+Create a new excursion
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ❌
+Teacher | ❌
+Student | ✔️*
+
+*Only for own group
+
+#### Request body
+```json
+{
+  "group": "number",
+  "date": "date",
+  "description": "string"
+}
+```
+
+#### Response
+Status code | Meaning
+----------- | -------
+201         | Created
+403         | Tried to create excursion for other group
+
+### ![PATCH](https://img.shields.io/badge/PATCH-yellow) `/excursion/{id}`
+
+Update excursion
+
+Only used by teachers to approve/deny excursions. Description and other info cannot be changed currently.
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+id       | yes      | ID of the excursion
+
+#### Request body
+```json
+{
+  "state": "pending | accepted | denied" // optional
+}
+```
+
+#### Response
+Status code | Meaning
+----------- | -------
+200         | Excursion info updated
+404         | No excursion with ID
+
+### ![DELETE](https://img.shields.io/badge/DELETE-red) `/excursion/{id}`
+
+Delete excursion
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ✔️*
+
+*Only own excursions
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+id       | yes      | ID of the excursion
+
+#### Request body
+No data
+
+#### Response
+Status code | Meaning
+----------- | -------
+200         | Excursion deleted
+404         | No excursion with ID

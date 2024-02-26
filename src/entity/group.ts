@@ -66,8 +66,8 @@ export async function list(req: express.Request, res: express.Response) {
 
 
 export async function create(req: express.Request, res: express.Response) {
-    if (!req.body['projectType'] ||
-        !(req.body['projectType'] in ProjectType)) {
+    if (!req.body['type'] ||
+        !(req.body['type'] in ProjectType) || !req.body['startDate']) {
         res.status(400).end();
         return;
     }
@@ -106,8 +106,9 @@ export async function create(req: express.Request, res: express.Response) {
 
     const result = await Group.insert({
         name: req.body['name'],
-        startDate: new Date(),
-        projectType: req.body['projectType'],
+        startDate: req.body['startDate'],
+        endDate: req.body['endDate'],
+        projectType: req.body['type'],
         onlinePinboard: ''
     });
     
@@ -143,19 +144,20 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
         return;
     }
 
-    const user :number[] = [];
+    const user :string[] = [];
     for (let index = 0; index < group.student.length; index++) {
         const student = group.student[index];
-        user.push(student.user.id);
+        user.push(student.user.username);
     }
 
     res.status(200).json({
+        id: group.id,
         name: group.name,
-        onlinePinnwand: group.onlinePinboard,
-        projectType: group.projectType,
+        type: group.projectType,
+        pinboard: group.onlinePinboard,
         startDate: group.startDate,
         endDate: group.endDate,
-        user: user
+        members: user
     }).end();
 }
 

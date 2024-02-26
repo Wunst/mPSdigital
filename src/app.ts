@@ -72,6 +72,7 @@ app.get('/groups', group.list);
 app.get('/group/:id', group.info);
 app.post('/group', group.create);
 app.put('/group/:id/:username', group.join);
+app.delete('/group/:id/:username', group.del);
 
 AppDataSource.initialize()
     .then(() => {

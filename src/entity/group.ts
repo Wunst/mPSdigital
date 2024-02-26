@@ -220,3 +220,53 @@ export async function join(req: express.Request<{id: number, username: string}>,
     res.status(200).end();
 }
 
+export async function del(req: express.Request<{id: number, username: string}>, res: express.Response) {
+    const { id, username } = req.params;
+
+    if(!username || !id) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student){
+        res.status(403).end();
+        return;
+    }
+
+    const foundGroup = await Group.findOneBy({ id: id });
+    const foundUser = await User.findOneBy({ username });
+    if(!foundGroup || !foundUser) {
+        res.status(404).end();
+        return;
+    }
+
+    const student = await Student.findOne({
+        relations: {
+            user: true,
+            group: true,
+        },
+        where: {
+            user: foundUser
+        }
+    });
+
+    if(!student) {
+        res.status(403).end();
+        return;
+    }
+
+    await AppDataSource
+        .createQueryBuilder()
+        .relation(Student, "group")
+        .of(student)
+        .remove(id);
+
+    res.status(200).end();
+}
+

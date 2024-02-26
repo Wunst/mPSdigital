@@ -161,6 +161,38 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
     }).end();
 }
 
+export async function update(req: express.Request<{ id: number }>, res: express.Response) {
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser?.role == Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    const group = await Group.findOneBy({id: req.params['id']});
+
+    if(!group) {
+        res.status(401).end();
+        return;
+    }
+
+    await Group.update(
+        { id: req.params.id},
+        {name: req.body['name'],
+        projectType: req.body['type'],
+        onlinePinboard: req.body['pinboard'],
+        startDate: req.body['startDate'],
+        endDate: req.body['endDate'],}
+    );
+
+    res.status(200).end();
+}
+
 export async function join(req: express.Request<{id: number, username: string}>, res: express.Response) {
     const { id, username } = req.params;
 

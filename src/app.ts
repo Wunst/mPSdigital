@@ -69,8 +69,9 @@ app.delete('/user/:username', user.del)
 app.post('/user/:username/resetPassword', user.resetPassword);
 
 app.get('/groups', group.list);
-app.get('/group/:id', group.info);
 app.post('/group', group.create);
+app.get('/group/:id', group.info);
+app.patch('/group/:id/', group.update);
 app.put('/group/:id/:username', group.join);
 app.delete('/group/:id/:username', group.del);
 

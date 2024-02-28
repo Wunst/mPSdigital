@@ -61,3 +61,35 @@ export async function info (req: express.Request <{id: number}>, res: express.Re
         state: excursion.status,
     }).end();
 }
+
+
+
+
+export async function react (req: express.Request <{id: number}>, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+
+    const excursion = await Excursion.findOneBy({id: req.params.id});
+
+    if (!excursion) {
+        res.status(404).end();
+        return;
+    }
+
+
+    if(loggedInUser?.role === Role.student) {
+        res.status(403).end();
+    }
+
+    await Excursion.update(
+        { id: req.params['id'] },
+        { status: req.body['state']}
+    );
+
+    res.status(200).end();
+}

@@ -69,6 +69,7 @@ app.post('/group', group.create);
 app.put('/group/:id/:username', group.join);
 
 app.get('/excursion/:id', excursion.info);
+app.patch('/excursion/:id', excursion.react);
 
 AppDataSource.initialize()
     .then(() => {

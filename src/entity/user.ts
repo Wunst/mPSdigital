@@ -219,7 +219,7 @@ export async function resetPassword(req: express.Request, res: express.Response)
     
     await User.update(
         { username: req.params['username'] },
-        { password: await hashPassword(req.params['username']) }
+        { password: await hashPassword(req.params['username']), changedPassword: false }
     );
 
     res.status(200).end();

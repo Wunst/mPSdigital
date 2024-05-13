@@ -132,15 +132,15 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
         return;
     }
 
-    if(loggedInUser?.role == Role.student) {
+    const group = await Group.findOneBy({id: req.params['id']});
+
+    if(loggedInUser?.role == Role.student && !group?.student.find(student => student.id == loggedInUser.student.id)) {
         res.status(403).end();
         return;
     }
 
-    const group = await Group.findOneBy({id: req.params['id']});
-
     if(!group) {
-        res.status(401).end();
+        res.status(404).end();
         return;
     }
 

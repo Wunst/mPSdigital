@@ -73,29 +73,24 @@ export async function list(req: express.Request, res: express.Response) {
 }
 
 export async function info(req: express.Request, res: express.Response) {
-    if (!req.body['id']) {
-        res.status(400).end();
-        return;
-    }
-    
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
         return;
     }
 
-    const user = await User.findOneBy({id: req.body['id']});
+    if (loggedInUser.role == Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    const user = await User.findOneBy({username: req.params['username']});
     if (!user) {
         res.status(404).end();
         return;
     }
 
-    if(loggedInUser?.role == Role.student && user.id !== loggedInUser.id) {
-        res.status(403).end();
-        return;
-    }
-
-    if (user.student && req.body['groupId']) {
+    if (user.student) {
         let specialParentalConsent = false;
         if(await SpecialParentalConsent.findOne({
             relations: {group: true, student: true},

@@ -60,7 +60,14 @@ export async function list(req: express.Request, res: express.Response) {
     }
 
     res.status(200).json({
-        groups: await Group.find(),
+        groups: await Group.find({
+            relations: {
+                student: true,
+            },
+            where: {
+                student: { form: { name: req.query.form?.toString() } },
+            }
+        }),
     }).end();
 }
 

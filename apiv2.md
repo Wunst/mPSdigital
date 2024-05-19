@@ -52,7 +52,7 @@ No data
 {
   "username": "string",
   "role": "student | teacher | admin",
-  "group": "number"
+  "group": "number" // nullable
 }
 ```
 

@@ -11,16 +11,16 @@ async function status(req: express.Request, res: express.Response) {
         return;
     }
     
-    let hasGroup = false;
-    if(user.role === Role.student &&
-        await Group.findOne({relations:{student: { user: true }}, where: { endDate: Or(MoreThan(new Date()), IsNull()) , student: { user: { id: user.id } } } })){
-        hasGroup = true;
+    let group = null;
+    if(user.role === Role.student) {
+        group = await Group.findOne({relations:{student: { user: true }}, where: { endDate: Or(MoreThan(new Date()), IsNull()) , student: { user: { id: user.id } } } });
     }
 
     res.status(200).json({
         username: user.username,
         role: user.role,
-        hasGroup
+        changedPassword: user.changedPassword,
+        group: group?.id,
     }).end();
 }
 
@@ -59,7 +59,7 @@ function logout(req: express.Request, res: express.Response) {
 async function getSession(req: express.Request<any>): Promise<User | null> {
     return req.session.userId ? await User.findOne({
         relations: {
-            form: true,
+            student: true,
         },
         where: {
             id: req.session.userId

@@ -26,8 +26,7 @@ export class User extends BaseEntity {
 
     @Column({
         type: 'simple-enum',
-        enum: Role,
-        default: Role.student
+        enum: Role
     })
     role!: Role;
 
@@ -35,13 +34,15 @@ export class User extends BaseEntity {
     student => student.user)
     student!: Student;
 
-    @ManyToMany(() => Form,
-    form => form.user)
-    @JoinTable()
-    form!: Form[]
+    @Column({
+        default: false
+    })
+    changedPassword!: boolean;
 
-    @Column()
-    allForms!: boolean;
+    @Column({
+        default: "{}"
+    })
+    settings!: string;
 };
 
 async function hashPassword(password: string): Promise<string> {
@@ -67,29 +68,24 @@ export async function list(req: express.Request, res: express.Response) {
 }
 
 export async function info(req: express.Request, res: express.Response) {
-    if (!req.body['id']) {
-        res.status(400).end();
-        return;
-    }
-    
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
         return;
     }
 
-    const user = await User.findOneBy({id: req.body['id']});
+    if (loggedInUser.role == Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    const user = await User.findOneBy({username: req.params['username']});
     if (!user) {
         res.status(404).end();
         return;
     }
 
-    if(loggedInUser?.role == Role.student && user.id !== loggedInUser.id) {
-        res.status(403).end();
-        return;
-    }
-
-    if (user.student && req.body['groupId']) {
+    if (user.student) {
         let specialParentalConsent = false;
         if(await SpecialParentalConsent.findOne({
             relations: {group: true, student: true},
@@ -100,7 +96,7 @@ export async function info(req: express.Request, res: express.Response) {
         res.status(200).json({
             username: user.username,
             role: user.role,
-            form: user.form,
+            form: user.student.form,
             generalParentalConsent: user.student.generalParentalConsent,
             specialParentalConsent: specialParentalConsent,
         }).end();
@@ -108,9 +104,57 @@ export async function info(req: express.Request, res: express.Response) {
         res.status(200).json({
             username: user.username,
             role: user.role,
-            form: user.form,
         }).end();
     }
+}
+
+export async function update(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser?.role === Role.student || (req.params['username'] != Role.student && loggedInUser?.role != Role.admin)) {
+        res.status(403).end();
+        return;
+    }
+
+    if(!(User.findOneBy({username: req.params['username']}))){
+        res.status(404).end();
+    }
+    
+    await User.update(
+        { username: req.params['username'] },
+        { role: req.body['role'], username: req.body['username'] }
+    );
+
+    res.status(200).end();
+
+}
+
+export async function del(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser?.role === Role.student || (req.params['username'] != Role.student && loggedInUser?.role != Role.admin)) {
+        res.status(403).end();
+        return;
+    }
+
+    if(!(User.findOneBy({username: req.params['username']}))){
+        res.status(404).end();
+    }
+    
+    await User.delete(
+        { username: req.params['username'] },
+    );
+
+    res.status(200).end();
+
 }
 
 export async function changePassword(req: express.Request, res: express.Response) {
@@ -134,7 +178,7 @@ export async function changePassword(req: express.Request, res: express.Response
     
     await User.update(
         { username: loggedInUser.username },
-        { password: await hashPassword(req.body['new']) }
+        { password: await hashPassword(req.body['new']), changedPassword: true }
     );
 
     res.status(200).end();
@@ -169,7 +213,7 @@ export async function resetPassword(req: express.Request, res: express.Response)
     
     await User.update(
         { username: req.params['username'] },
-        { password: await hashPassword(req.params['username']) }
+        { password: await hashPassword(req.params['username']), changedPassword: false }
     );
 
     res.status(200).end();
@@ -214,4 +258,32 @@ export async function create(req: express.Request, res: express.Response) {
     }
 
     res.status(201).end();
+}
+
+export async function settings(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    res.type('json').send(loggedInUser.settings).end();
+}
+
+export async function updateSettings(req: express.Request, res: express.Response) {
+    const settings = JSON.stringify(req.body);
+    if (!settings) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    User.update({ id: loggedInUser.id }, { settings });
+
+    res.status(200).end();
 }

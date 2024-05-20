@@ -1,8 +1,9 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany, ManyToMany, JoinTable} from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany, ManyToMany, JoinTable, ManyToOne} from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { User } from "./user"
 import { Group} from "./group"
 import { SpecialParentalConsent } from './specialParentalConsent';
+import { Form } from './form';
 
 
 @Entity()
@@ -18,6 +19,9 @@ export class Student extends BaseEntity {
     user => user.student)
     @JoinColumn()
     user!: User;
+
+    @ManyToOne(() => Form, form => form.students)
+    form!: Form;
 
     @Column()
     generalParentalConsent!: boolean;

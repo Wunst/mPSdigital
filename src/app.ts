@@ -52,6 +52,10 @@ app.use(session({
     }
 }));
 
+app.get('/', auth.status);
+app.get('/account/settings', user.settings);
+app.put('/account/settings', user.updateSettings);
+
 app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 
@@ -70,6 +74,16 @@ app.put('/group/:id/:username', group.join);
 
 app.get('/excursion/:id', excursion.info);
 app.patch('/excursion/:id', excursion.react);
+app.patch('/user/:username', user.update)
+app.delete('/user/:username', user.del)
+app.post('/user/:username/passwordReset', user.resetPassword);
+
+app.get('/groups', group.list);
+app.post('/group', group.create);
+app.get('/group/:id', group.info);
+app.patch('/group/:id/', group.update);
+app.put('/group/:id/:username', group.join);
+app.delete('/group/:id/:username', group.del);
 
 AppDataSource.initialize()
     .then(() => {

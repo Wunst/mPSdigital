@@ -32,7 +32,7 @@ export async function create(req: express.Request, res: express.Response) {
         return;
     }
 
-    if(loggedInUser.role === Role.teacher){
+    if(loggedInUser.role === Role.student){
         res.status(403).end();
         return;
     }

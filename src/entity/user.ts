@@ -132,7 +132,7 @@ export async function update(req: express.Request, res: express.Response) {
     
     await User.update(
         { username: req.params['username'] },
-        { role: req.body['role'], username: req.body['username'] }
+        { role: req.body['role'], username: req.body['username'], form: req.body['form'] },
     );
 
     res.status(200).end();
@@ -253,7 +253,8 @@ export async function create(req: express.Request, res: express.Response) {
     await User.insert({
         username: req.params['username'],
         password: await hashPassword(req.params['username']),
-        role: req.body['role']
+        role: req.body['role'],
+        form: req.body['form']
     });
 
     if (req.body['role'] === Role.student) {

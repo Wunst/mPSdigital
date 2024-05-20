@@ -287,4 +287,3 @@ export async function updateSettings(req: express.Request, res: express.Response
 
     res.status(200).end();
 }
-

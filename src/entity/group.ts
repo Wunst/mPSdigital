@@ -5,6 +5,7 @@ import express from 'express';
 import auth from '../auth';
 import { Role, User } from './user';
 import { SpecialParentalConsent } from './specialParentalConsent';
+import { Excursion } from "./excursion";
 
 export enum ProjectType {
     mPS = 'mPS',
@@ -49,7 +50,10 @@ export class Group extends BaseEntity {
 
     @OneToMany(() => SpecialParentalConsent,
     specialParentalConsent => specialParentalConsent.group)
-    specialParentalConsent!: SpecialParentalConsent
+    specialParentalConsent!: SpecialParentalConsent;
+
+    @OneToMany(() => Excursion, exc => exc.group)
+    excursions!: Excursion[];
 };
 
 export async function list(req: express.Request, res: express.Response) {
@@ -312,4 +316,3 @@ export async function del(req: express.Request<{id: number, username: string}>, 
 
     res.status(200).end();
 }
-

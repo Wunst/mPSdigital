@@ -1,8 +1,9 @@
 import { BaseEntity, Entity, Column, PrimaryColumn, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 import { AppDataSource } from '../data-source';
-import { Role, User } from './user';
+import { Role } from './user';
 import express from 'express';
 import auth from '../auth';
+import { Student } from './student';
 
 
 @Entity()

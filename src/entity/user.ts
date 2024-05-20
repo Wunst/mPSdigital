@@ -2,7 +2,6 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, 
 import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
-import { Form } from './form';
 import { Student } from './student';
 import { SpecialParentalConsent } from './specialParentalConsent';
 
@@ -120,13 +119,25 @@ export async function update(req: express.Request, res: express.Response) {
         return;
     }
 
-    if(!(User.findOneBy({username: req.params['username']}))){
+const user = await User.findOneBy({username: req.params['username']});
+
+    if(!user){
         res.status(404).end();
+        return;
     }
     
+    if(user.role === Role.student){
+        await Student.update(
+            { user: user},
+            { form: req.body['form'] },
+        );
+    
+        res.status(200).end();
+    }
+
     await User.update(
         { username: req.params['username'] },
-        { role: req.body['role'], username: req.body['username'], form: req.body['form'] },
+        { role: req.body['role'], username: req.body['username']},
     );
 
     res.status(200).end();
@@ -238,8 +249,9 @@ export async function create(req: express.Request, res: express.Response) {
         return;
     }
     
+    const user = await User.findOneBy({ username: req.params['username']});
     // User already exist
-    if(await User.findOneBy({ username: req.params['username']})){
+    if(!user){
         res.status(409).send('User exists').end();
         return;
     }
@@ -248,13 +260,13 @@ export async function create(req: express.Request, res: express.Response) {
         username: req.params['username'],
         password: await hashPassword(req.params['username']),
         role: req.body['role'],
-        form: req.body['form']
     });
 
     if (req.body['role'] === Role.student) {
         await Student.insert({
             user: (await User.findOneBy({ username: req.params['username'] }))!,
             generalParentalConsent: false,
+            form: req.body['form'],
         });
     }
 

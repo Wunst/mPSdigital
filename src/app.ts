@@ -7,6 +7,7 @@ import { AppDataSource } from './data-source';
 import auth from './auth';
 import * as user from './entity/user';
 import * as group from './entity/group';
+import * as form from './entity/form';
 
 declare module 'express-session' {
     interface SessionData {
@@ -74,6 +75,8 @@ app.get('/group/:id', group.info);
 app.patch('/group/:id/', group.update);
 app.put('/group/:id/:username', group.join);
 app.delete('/group/:id/:username', group.del);
+
+app.post('/form', form.create);
 
 AppDataSource.initialize()
     .then(() => {

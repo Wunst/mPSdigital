@@ -1,7 +1,8 @@
 import { BaseEntity, Entity, Column, PrimaryColumn, ManyToMany } from 'typeorm';
 import { AppDataSource } from '../data-source';
-import { Student} from "./student"
-import { User } from './user';
+import { Role, User } from './user';
+import express from 'express';
+import auth from '../auth';
 
 
 @Entity()
@@ -16,3 +17,30 @@ export class Form extends BaseEntity {
     @Column()
     mPSYear!: string;
 };
+
+export async function create(req: express.Request, res: express.Response) {
+    //todo: check for list of user
+    if (!req.body['name'] ||
+        !req.body['mPSYear']) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role !== Role.teacher){
+        res.status(403).end();
+        return;
+    }
+    //todo: insert users
+    const result = await Form.insert({
+        name: req.body['name'],
+        mPSYear: req.body['type'],
+    });
+    
+    res.status(201).end();
+}

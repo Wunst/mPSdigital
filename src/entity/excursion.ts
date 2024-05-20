@@ -1,6 +1,6 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, IsNull, ManyToOne, MoreThan, Or, PrimaryGeneratedColumn } from "typeorm";
+import express from "express";
 import { Group } from "./group";
-import express from 'express';
 import auth from '../auth';
 import { Student } from './student';
 import { Form } from './form';
@@ -34,7 +34,6 @@ export class Excursion extends BaseEntity {
     status!: Status;
 };
 
-
 export async function info (req: express.Request <{id: number}>, res: express.Response) {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
@@ -62,8 +61,79 @@ export async function info (req: express.Request <{id: number}>, res: express.Re
     }).end();
 }
 
+export async function list(req: express.Request, res: express.Response) {    
+    const loggedInUser = await auth.getSession(req);
 
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
 
+    if (loggedInUser.role === Role.student) {
+        res.status(200).json(await Excursion.find({
+            relations: {
+                group: {
+                    student: true,
+                },
+            },
+            where: {
+                group: {
+                    endDate: Or(IsNull(), MoreThan(new Date())),
+                    student: {
+                        user: { id: loggedInUser.id },
+                    },
+                }
+            }
+        })).end();
+    } else {
+        res.status(200).json(await Excursion.find()).end();
+    }
+}
+
+export async function create(req: express.Request<{}, {}, {
+    group: number,
+    date: Date,
+    description: string,
+}>, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if (loggedInUser.role !== Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    const group = await Group.findOne({
+        relations: {
+            student: {
+                user: true,
+            },
+        },
+        where: {
+            id: req.body.group,
+            endDate: Or(IsNull(), MoreThan(new Date())),
+            student: {
+                user: { id: loggedInUser.id }
+            },
+        }
+    });
+    if (!group) {
+        res.status(403).end();
+        return;
+    }
+
+    await Excursion.insert({
+        group,
+        date: req.body.date,
+        description: req.body.description,
+    });
+    
+    res.status(201).end();
+}
 
 export async function react (req: express.Request <{id: number}>, res: express.Response) {
     const loggedInUser = await auth.getSession(req);
@@ -73,17 +143,15 @@ export async function react (req: express.Request <{id: number}>, res: express.R
         return;
     }
 
+    if(loggedInUser?.role === Role.student) {
+        res.status(403).end();
+    }
 
     const excursion = await Excursion.findOneBy({id: req.params.id});
 
     if (!excursion) {
         res.status(404).end();
         return;
-    }
-
-
-    if(loggedInUser?.role === Role.student) {
-        res.status(403).end();
     }
 
     await Excursion.update(

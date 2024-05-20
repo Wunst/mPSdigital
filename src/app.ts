@@ -72,6 +72,8 @@ app.get('/group/:id', group.info);
 app.post('/group', group.create);
 app.put('/group/:id/:username', group.join);
 
+app.get('/excursions', excursion.list);
+app.post('/excursion', excursion.create);
 app.get('/excursion/:id', excursion.info);
 app.patch('/excursion/:id', excursion.react);
 app.patch('/user/:username', user.update)

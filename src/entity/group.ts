@@ -60,7 +60,14 @@ export async function list(req: express.Request, res: express.Response) {
     }
 
     res.status(200).json({
-        groups: await Group.find(),
+        groups: await Group.find({
+            relations: {
+                student: true,
+            },
+            where: {
+                student: { form: { name: req.query.form?.toString() } },
+            }
+        }),
     }).end();
 }
 
@@ -132,14 +139,18 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
         return;
     }
 
-    const group = await Group.findOneBy({id: req.params['id']});
+    const group = await Group.findOne({
+        relations: {
+            student: { user: true },
+        },
+        where: {
+            id: req.params['id']
+        }
+    });
 
-    if(loggedInUser?.role == Role.student && !group?.student.find(student => student.id == loggedInUser.student.id)) {
-        res.status(403).end();
-        return;
-    }
-
-    if(!group) {
+    if(!group || loggedInUser?.role == Role.student &&
+        !group.student.find(student => student.id == loggedInUser.student.id))
+    {
         res.status(404).end();
         return;
     }

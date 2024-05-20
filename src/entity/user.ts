@@ -34,11 +34,6 @@ export class User extends BaseEntity {
     student => student.user)
     student!: Student;
 
-    @ManyToMany(() => Form,
-    form => form.user)
-    @JoinTable()
-    form!: Form[]
-
     @Column({
         default: false
     })
@@ -101,7 +96,7 @@ export async function info(req: express.Request, res: express.Response) {
         res.status(200).json({
             username: user.username,
             role: user.role,
-            form: user.form,
+            form: user.student.form,
             generalParentalConsent: user.student.generalParentalConsent,
             specialParentalConsent: specialParentalConsent,
         }).end();
@@ -109,7 +104,6 @@ export async function info(req: express.Request, res: express.Response) {
         res.status(200).json({
             username: user.username,
             role: user.role,
-            form: user.form,
         }).end();
     }
 }

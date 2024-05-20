@@ -275,6 +275,12 @@ Admin   | ✔️
 Teacher | ✔️
 Student | ✔️
 
+#### Query string params
+
+Name     | Description
+-------- | -----------
+form     | Only show groups with at least one student in this form
+
 #### Request body
 No data
 

@@ -59,7 +59,7 @@ function logout(req: express.Request, res: express.Response) {
 async function getSession(req: express.Request<any>): Promise<User | null> {
     return req.session.userId ? await User.findOne({
         relations: {
-            form: true,
+            student: true,
         },
         where: {
             id: req.session.userId

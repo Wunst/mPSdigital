@@ -4,7 +4,6 @@ import { AppDataSource } from '../data-source';
 import express from 'express';
 import auth from '../auth';
 import { Role, User } from './user';
-import { group } from 'console';
 import { SpecialParentalConsent } from './specialParentalConsent';
 import { Excursion } from "./excursion";
 
@@ -64,38 +63,22 @@ export async function list(req: express.Request, res: express.Response) {
         return;
     }
 
-    if (loggedInUser.role === Role.student) {
-        res.status(403).end();
-        return;
-    }
-
-    let groups : Group[] = [];
-
-    if (!loggedInUser.allForms) {
-        for (let index = 0; index < loggedInUser.form.length; index++) {
-            const form = loggedInUser.form[index];
-            groups = await Group.find({
-                relations: {
-                    student: { user: { form: true } }
-                },
-                where: {
-                    student: { user: { form } },
-                    endDate: Or(MoreThan(new Date()), IsNull())
-                }});
-        }
-    } else {
-       groups = await Group.find();
-    }
-
     res.status(200).json({
-        groups,
+        groups: await Group.find({
+            relations: {
+                student: true,
+            },
+            where: {
+                student: { form: { name: req.query.form?.toString() } },
+            }
+        }),
     }).end();
 }
 
 
 export async function create(req: express.Request, res: express.Response) {
-    if (!req.body['projectType'] ||
-        !(req.body['projectType'] in ProjectType)) {
+    if (!req.body['type'] ||
+        !(req.body['type'] in ProjectType) || !req.body['startDate']) {
         res.status(400).end();
         return;
     }
@@ -134,8 +117,9 @@ export async function create(req: express.Request, res: express.Response) {
 
     const result = await Group.insert({
         name: req.body['name'],
-        startDate: new Date(),
-        projectType: req.body['projectType'],
+        startDate: req.body['startDate'],
+        endDate: req.body['endDate'],
+        projectType: req.body['type'],
         onlinePinboard: ''
     });
     
@@ -159,6 +143,47 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
         return;
     }
 
+    const group = await Group.findOne({
+        relations: {
+            student: { user: true },
+        },
+        where: {
+            id: req.params['id']
+        }
+    });
+
+    if(!group || loggedInUser?.role == Role.student &&
+        !group.student.find(student => student.id == loggedInUser.student.id))
+    {
+        res.status(404).end();
+        return;
+    }
+
+    const user :string[] = [];
+    for (let index = 0; index < group.student.length; index++) {
+        const student = group.student[index];
+        user.push(student.user.username);
+    }
+
+    res.status(200).json({
+        id: group.id,
+        name: group.name,
+        type: group.projectType,
+        pinboard: group.onlinePinboard,
+        startDate: group.startDate,
+        endDate: group.endDate,
+        members: user
+    }).end();
+}
+
+export async function update(req: express.Request<{ id: number }>, res: express.Response) {
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
     if(loggedInUser?.role == Role.student) {
         res.status(403).end();
         return;
@@ -171,20 +196,16 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
         return;
     }
 
-    const user :number[] = [];
-    for (let index = 0; index < group.student.length; index++) {
-        const student = group.student[index];
-        user.push(student.user.id);
-    }
+    await Group.update(
+        { id: req.params.id},
+        {name: req.body['name'],
+        projectType: req.body['type'],
+        onlinePinboard: req.body['pinboard'],
+        startDate: req.body['startDate'],
+        endDate: req.body['endDate'],}
+    );
 
-    res.status(200).json({
-        name: group.name,
-        onlinePinnwand: group.onlinePinboard,
-        projectType: group.projectType,
-        startDate: group.startDate,
-        endDate: group.endDate,
-        user: user
-    }).end();
+    res.status(200).end();
 }
 
 export async function join(req: express.Request<{id: number, username: string}>, res: express.Response) {
@@ -241,7 +262,57 @@ export async function join(req: express.Request<{id: number, username: string}>,
         .createQueryBuilder()
         .relation(Student, "group")
         .of(student)
-        .add(group);
+        .add(id);
+
+    res.status(200).end();
+}
+
+export async function del(req: express.Request<{id: number, username: string}>, res: express.Response) {
+    const { id, username } = req.params;
+
+    if(!username || !id) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student){
+        res.status(403).end();
+        return;
+    }
+
+    const foundGroup = await Group.findOneBy({ id: id });
+    const foundUser = await User.findOneBy({ username });
+    if(!foundGroup || !foundUser) {
+        res.status(404).end();
+        return;
+    }
+
+    const student = await Student.findOne({
+        relations: {
+            user: true,
+            group: true,
+        },
+        where: {
+            user: foundUser
+        }
+    });
+
+    if(!student) {
+        res.status(403).end();
+        return;
+    }
+
+    await AppDataSource
+        .createQueryBuilder()
+        .relation(Student, "group")
+        .of(student)
+        .remove(id);
 
     res.status(200).end();
 }

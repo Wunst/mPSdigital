@@ -1,9 +1,10 @@
 import { BaseEntity, Column, Entity, IsNull, ManyToOne, MoreThan, Or, PrimaryGeneratedColumn } from "typeorm";
 import express from "express";
 import { Group } from "./group";
-import auth from "../auth";
-import { Student } from "./student";
-import { Role } from "./user";
+import auth from '../auth';
+import { Student } from './student';
+import { Form } from './form';
+import { Role, User } from "./user"
 
 export enum Status {
     pending = 'pending',
@@ -33,7 +34,34 @@ export class Excursion extends BaseEntity {
     status!: Status;
 };
 
-export async function list(req: express.Request, res: express.Response) {
+export async function info (req: express.Request <{id: number}>, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    const excursion = await Excursion.findOneBy({id: req.params.id});
+
+    if (!excursion) {
+        res.status(404).end();
+        return;
+    }
+
+    if(loggedInUser?.role === Role.student && !loggedInUser.student.group.includes(excursion.group)) {
+        res.status(403).end();
+    }
+
+    res.status(200).json({
+        id: excursion.id,
+        group: excursion.group.id,
+        date: excursion.date,
+        description: excursion.description,
+        state: excursion.status,
+    }).end();
+}
+
+export async function list(req: express.Request, res: express.Response) {    
     const loggedInUser = await auth.getSession(req);
 
     if (!loggedInUser) {
@@ -105,4 +133,31 @@ export async function create(req: express.Request<{}, {}, {
     });
     
     res.status(201).end();
+}
+
+export async function react (req: express.Request <{id: number}>, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser?.role === Role.student) {
+        res.status(403).end();
+    }
+
+    const excursion = await Excursion.findOneBy({id: req.params.id});
+
+    if (!excursion) {
+        res.status(404).end();
+        return;
+    }
+
+    await Excursion.update(
+        { id: req.params['id'] },
+        { status: req.body['state']}
+    );
+
+    res.status(200).end();
 }

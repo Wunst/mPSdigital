@@ -1,7 +1,7 @@
 import { BaseEntity, Entity, Column, PrimaryColumn, ManyToMany } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { Student} from "./student"
-import user, { User } from './user';
+import { User } from './user';
 
 
 @Entity()

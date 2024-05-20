@@ -11,15 +11,12 @@ export enum ProjectType {
     Herausforderung = 'Herausforderung'
 }
 
-
 @Entity()
 export class Group extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column(
- //       {unique: true}
-        )
+    @Column()
     name!: string;
 
     @Column()
@@ -55,7 +52,7 @@ export class Group extends BaseEntity {
     specialParentalConsent!: SpecialParentalConsent
 };
 
-async function groupList(req: express.Request, res: express.Response) {
+export async function list(req: express.Request, res: express.Response) {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
@@ -68,9 +65,9 @@ async function groupList(req: express.Request, res: express.Response) {
 }
 
 
-async function createGroup(req: express.Request, res: express.Response) {
-    if (!req.body['name'] || !req.body['projectType'] ||
-        !(req.body['projectType'] in ProjectType)) {
+export async function create(req: express.Request, res: express.Response) {
+    if (!req.body['type'] ||
+        !(req.body['type'] in ProjectType) || !req.body['startDate']) {
         res.status(400).end();
         return;
     }
@@ -81,11 +78,6 @@ async function createGroup(req: express.Request, res: express.Response) {
         return;
     }
 
-    // unique name of the group
-    // if(await Group.findOneBy({name: req.body['name']})){
-    //     res.status(409).end();
-    //     return;
-    // }
 
     // memorise student
     let loggedInStudent;
@@ -114,30 +106,62 @@ async function createGroup(req: express.Request, res: express.Response) {
 
     const result = await Group.insert({
         name: req.body['name'],
-        startDate: new Date(),
-        projectType: req.body['projectType'],
+        startDate: req.body['startDate'],
+        endDate: req.body['endDate'],
+        projectType: req.body['type'],
         onlinePinboard: ''
     });
     
 
-    if(loggedInStudent !== null){
+    if(loggedInStudent){
         await AppDataSource
             .createQueryBuilder()
             .relation(Student, "group")
             .of(loggedInStudent)
-// TODO: test, if it works
-            .add(result.identifiers[0])
-//          .add(Group.findOneBy({name: req.body['name']}))
+            .add(result.identifiers[0]);
         
     }
     res.status(201).end();
 }
 
-async function informationsGroup(req: express.Request, res: express.Response) {
-    if (!req.body['id']) {
-        res.status(400).end();
+export async function info(req: express.Request<{ id: number }>, res: express.Response) {
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
         return;
     }
+
+    const group = await Group.findOneBy({id: req.params['id']});
+
+    if(loggedInUser?.role == Role.student && !group?.student.find(student => student.id == loggedInUser.student.id)) {
+        res.status(403).end();
+        return;
+    }
+
+    if(!group) {
+        res.status(404).end();
+        return;
+    }
+
+    const user :string[] = [];
+    for (let index = 0; index < group.student.length; index++) {
+        const student = group.student[index];
+        user.push(student.user.username);
+    }
+
+    res.status(200).json({
+        id: group.id,
+        name: group.name,
+        type: group.projectType,
+        pinboard: group.onlinePinboard,
+        startDate: group.startDate,
+        endDate: group.endDate,
+        members: user
+    }).end();
+}
+
+export async function update(req: express.Request<{ id: number }>, res: express.Response) {
 
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
@@ -150,32 +174,29 @@ async function informationsGroup(req: express.Request, res: express.Response) {
         return;
     }
 
-    const group = await Group.findOneBy({id: req.body['id']});
+    const group = await Group.findOneBy({id: req.params['id']});
 
     if(!group) {
         res.status(401).end();
         return;
     }
 
-    const user :number[] = [];
-    for (let index = 0; index < group.student.length; index++) {
-        const student = group.student[index];
-        user.push(student.user.id);
-    }
+    await Group.update(
+        { id: req.params.id},
+        {name: req.body['name'],
+        projectType: req.body['type'],
+        onlinePinboard: req.body['pinboard'],
+        startDate: req.body['startDate'],
+        endDate: req.body['endDate'],}
+    );
 
-    res.status(200).json({
-        name: group.name,
-        onlinePinnwand: group.onlinePinboard,
-        projectType: group.projectType,
-        startDate: group.startDate,
-        endDate: group.endDate,
-        user: user
-    }).end();
+    res.status(200).end();
 }
 
-async function join(req: express.Request, res: express.Response) {
-    const { username, group } = req.body;
-    if(!username || !group) {
+export async function join(req: express.Request<{id: number, username: string}>, res: express.Response) {
+    const { id, username } = req.params;
+
+    if(!username || !id) {
         res.status(400).end();
         return;
     }
@@ -186,7 +207,7 @@ async function join(req: express.Request, res: express.Response) {
         return;
     }
 
-    const foundGroup = await Group.findOneBy({ id: group });
+    const foundGroup = await Group.findOneBy({ id: id });
     const foundUser = await User.findOneBy({ username });
     if(!foundGroup || !foundUser) {
         res.status(404).end();
@@ -226,9 +247,58 @@ async function join(req: express.Request, res: express.Response) {
         .createQueryBuilder()
         .relation(Student, "group")
         .of(student)
-        .add(group);
+        .add(id);
 
     res.status(200).end();
 }
 
-export default { groupList, createGroup, informationsGroup, join };
+export async function del(req: express.Request<{id: number, username: string}>, res: express.Response) {
+    const { id, username } = req.params;
+
+    if(!username || !id) {
+        res.status(400).end();
+        return;
+    }
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student){
+        res.status(403).end();
+        return;
+    }
+
+    const foundGroup = await Group.findOneBy({ id: id });
+    const foundUser = await User.findOneBy({ username });
+    if(!foundGroup || !foundUser) {
+        res.status(404).end();
+        return;
+    }
+
+    const student = await Student.findOne({
+        relations: {
+            user: true,
+            group: true,
+        },
+        where: {
+            user: foundUser
+        }
+    });
+
+    if(!student) {
+        res.status(403).end();
+        return;
+    }
+
+    await AppDataSource
+        .createQueryBuilder()
+        .relation(Student, "group")
+        .of(student)
+        .remove(id);
+
+    res.status(200).end();
+}
+

@@ -251,7 +251,7 @@ export async function create(req: express.Request, res: express.Response) {
     
     const user = await User.findOneBy({ username: req.params['username']});
     // User already exist
-    if(!user){
+    if(user){
         res.status(409).send('User exists').end();
         return;
     }

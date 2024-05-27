@@ -153,7 +153,7 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
     });
 
     if(!group || loggedInUser?.role == Role.student &&
-        !group.student.find(student => student.id == loggedInUser.student.id))
+        !group.student.find(student => student.user.id == loggedInUser.id))
     {
         res.status(404).end();
         return;

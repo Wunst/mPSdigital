@@ -96,3 +96,17 @@ export async function addStudent(req: express.Request<{name: string, username: s
 
     res.status(200).end();
 }
+
+export async function list(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    res.status(200).json(
+        (await Form.find()).map(form => ({
+            name: form.name
+        }))
+    ).end();
+}

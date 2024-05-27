@@ -90,6 +90,7 @@ app.delete('/group/:id/:username', group.del);
 
 app.post('/form', form.create);
 app.put('/form/:name/:username',form.addStudent);
+app.get('/forms', form.list);
 
 AppDataSource.initialize()
     .then(() => {

@@ -69,25 +69,31 @@ export async function list(req: express.Request, res: express.Response) {
         return;
     }
 
-    if (loggedInUser.role === Role.student) {
-        res.status(200).json(await Excursion.find({
-            relations: {
-                group: {
-                    student: true,
-                },
+    const excursions = await Excursion.find({
+        relations: {
+            group: {
+                student: true,
             },
-            where: {
-                group: {
-                    endDate: Or(IsNull(), MoreThan(new Date())),
-                    student: {
-                        user: { id: loggedInUser.id },
-                    },
-                }
+        },
+        where: {
+            group: {
+                endDate: Or(IsNull(), MoreThan(new Date())),
+                student: loggedInUser.role === Role.student ? {
+                    user: { id: loggedInUser.id },
+                } : {},
             }
-        })).end();
-    } else {
-        res.status(200).json(await Excursion.find()).end();
-    }
+        }
+    });
+    res.status(200).json(excursions.map(excursion => { return {
+        id: excursion.id,
+        date: excursion.date,
+        description: excursion.description,
+        status: excursion.status,
+        group: {
+            id: excursion.group.id,
+            name: excursion.group.name
+        } }
+    }));
 }
 
 export async function create(req: express.Request<{}, {}, {

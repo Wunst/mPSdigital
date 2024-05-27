@@ -132,7 +132,7 @@ Role    | ✔️/❌
 ------- | -----
 Admin   | ✔️
 Teacher | ✔️
-Student | ❌
+Student | ✔️
 
 #### Request body
 No data
@@ -668,3 +668,21 @@ Status code | Meaning
 403         | Student not allowed to add other student
 404         | No form with name or no student with name
 409         | User is not a student or already in a form
+
+### ![GET](https://img.shields.io/badge/GET-green) `/forms`
+
+List forms
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ✔️
+
+#### Request body
+No data
+
+#### Response
+200
+A JSON array of names from the forms

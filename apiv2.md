@@ -608,3 +608,30 @@ Status code | Meaning
 ----------- | -------
 200         | Excursion deleted
 404         | No excursion with ID
+
+## Form API
+
+### ![POST](https://img.shields.io/badge/POST-blue) `/form`
+
+Create a new form
+
+Only a teacher or admin can create as many foms as they want. The created form has no students.
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request body
+```json
+{
+  "name": "string",
+}
+```
+
+#### Response
+Status code | Meaning
+----------- | -------
+201         | Created

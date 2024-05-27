@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, Column, PrimaryColumn, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { Role } from './user';
 import express from 'express';
@@ -8,20 +8,20 @@ import { Student } from './student';
 
 @Entity()
 export class Form extends BaseEntity {
-    @PrimaryColumn()
-    name!: string;
-
+    @PrimaryGeneratedColumn()
+    id!: number;
+    
     @OneToMany(() => Student, student => student.form)
     students!: Student[]
 
+    @Index({ unique: true })
     @Column()
-    mPSYear!: string;
+    name!: string;
 };
 
 export async function create(req: express.Request, res: express.Response) {
     //todo: check for list of user
-    if (!req.body['name'] ||
-        !req.body['mPSYear']) {
+    if (!req.body['name']) {
         res.status(400).end();
         return;
     }
@@ -39,7 +39,6 @@ export async function create(req: express.Request, res: express.Response) {
     //todo: insert users
     const result = await Form.insert({
         name: req.body['name'],
-        mPSYear: req.body['type'],
     });
     
     res.status(201).end();

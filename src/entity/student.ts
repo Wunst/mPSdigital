@@ -12,7 +12,7 @@ export class Student extends BaseEntity {
     group => group.student)
     group!: Group[]
 
-    @PrimaryColumn()
+    @PrimaryColumn({ type: 'int' })
     @OneToOne(() => User,
     user => user.student)
     @JoinColumn()

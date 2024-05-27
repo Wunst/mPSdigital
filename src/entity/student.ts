@@ -1,5 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany, ManyToMany, JoinTable, ManyToOne, PrimaryColumn} from 'typeorm';
-import { AppDataSource } from '../data-source';
+import { BaseEntity, Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToMany, ManyToOne, PrimaryColumn} from 'typeorm';
 import { User } from "./user"
 import { Group} from "./group"
 import { SpecialParentalConsent } from './specialParentalConsent';
@@ -8,14 +7,16 @@ import { Form } from './form';
 
 @Entity()
 export class Student extends BaseEntity {
+    @PrimaryColumn({ name: 'userId', type: 'int' })
+    userId!: number;
+
     @ManyToMany(() => Group,
     group => group.student)
     group!: Group[]
 
-    @PrimaryColumn({ type: 'int' })
     @OneToOne(() => User,
     user => user.student)
-    @JoinColumn()
+    @JoinColumn({ name: 'userId' })
     user!: User;
 
     @ManyToOne(() => Form, form => form.students)

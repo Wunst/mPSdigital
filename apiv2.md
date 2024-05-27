@@ -56,6 +56,45 @@ No data
 }
 ```
 
+### ![GET](https://img.shields.io/badge/GET-green) `/account/settings`
+
+Get account settings (arbitrary JSON set by frontend)
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ✔️
+
+#### Request body
+No data
+
+#### Response
+200
+
+Arbitrary JSON previously set (default: `{}`)
+
+### ![PUT](https://img.shields.io/badge/PUT-purple) `/account/settings`
+
+Set account settings (arbitrary JSON).
+
+**Warning!** This **replaces** the settings object. You need to send the entire settings object, not only the changed parts.
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ✔️
+
+#### Request body
+
+Arbitrary JSON
+
+#### Response
+200
+
 ### ![POST](https://img.shields.io/badge/POST-blue) `/account/changePassword`
 
 Change own password

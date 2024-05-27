@@ -608,3 +608,63 @@ Status code | Meaning
 ----------- | -------
 200         | Excursion deleted
 404         | No excursion with ID
+
+## Form API
+
+### ![POST](https://img.shields.io/badge/POST-blue) `/form`
+
+Create a new form
+
+Only a teacher or admin can create as many foms as they want. The created form has no students.
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request body
+```json
+{
+  "name": "string",
+}
+```
+
+#### Response
+Status code | Meaning
+----------- | -------
+201         | Created
+
+### ![PUT](https://img.shields.io/badge/PUT-purple) `/form/{name}/{username}`
+
+Add a student to a form
+
+Only students may be added to a form.
+
+Only a teacher or admin can add any student to any form, provided they are not already in one.
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+name     | yes      | Name of form you want to add to
+username | yes      | Name of user to add
+
+#### Request body
+No data
+
+#### Response
+Status code | Meaning
+----------- | -------
+200         | Student added to form
+403         | Student not allowed to add other student
+404         | No form with name or no student with name
+409         | User is not a student or already in a form

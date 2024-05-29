@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, IsNull } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { Role, User } from './user';
 import express from 'express';
@@ -47,14 +47,19 @@ export async function create(req: express.Request, res: express.Response) {
 export async function addStudent(req: express.Request<{name: string, username: string}>, res: express.Response) {
     const { name, username } = req.params;
 
-    if(!username || !name) {
-        res.status(400).end();
-        return;
-    }
-
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
+        return;
+    }
+    
+    if(loggedInUser.role === Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    if(!username || !name) {
+        res.status(400).end();
         return;
     }
 
@@ -62,11 +67,6 @@ export async function addStudent(req: express.Request<{name: string, username: s
     const foundUser = await User.findOneBy({ username });
     if(!foundForm || !foundUser) {
         res.status(404).end();
-        return;
-    }
-
-    if(loggedInUser.role === Role.student) {
-        res.status(403).end();
         return;
     }
 
@@ -90,7 +90,7 @@ export async function addStudent(req: express.Request<{name: string, username: s
 
     await AppDataSource
         .createQueryBuilder()
-        .relation(Form, "student")
+        .relation(Form, "students")
         .of(foundForm)
         .add(student);
 

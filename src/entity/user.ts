@@ -78,7 +78,7 @@ export async function info(req: express.Request, res: express.Response) {
         return;
     }
 
-    const user = await User.findOne({relations: {student: true}, where: {username: req.params['username']}});
+    const user = await User.findOne({relations: {student:{ form: true}}, where: {username: req.params['username']}});
     if (!user) {
         res.status(404).end();
         return;

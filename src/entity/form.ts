@@ -110,3 +110,37 @@ export async function list(req: express.Request, res: express.Response) {
         }))
     ).end();
 }
+
+export async function listStudent(req: express.Request, res: express.Response) {
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    const students = await Student.find({
+        relations: {
+            group: {
+                student: true,
+            },
+        },
+        where: {
+            group: {
+                endDate: Or(IsNull(), MoreThan(new Date())),
+                student: loggedInUser.role === Role.student ? {
+                    user: { id: loggedInUser.id },
+                } : {},
+            }
+        }
+    });
+    res.status(200).json(excursions.map(excursion => { return {
+        id: excursion.id,
+        date: excursion.date,
+        description: excursion.description,
+        status: excursion.status,
+        group: {
+            id: excursion.group.id,
+            name: excursion.group.name
+        } }
+    }));
+}

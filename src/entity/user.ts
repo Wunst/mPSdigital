@@ -101,7 +101,7 @@ export async function info(req: express.Request, res: express.Response) {
             username: user.username,
             role: user.role,
             form: user.student.form,
-            group: group,
+            group: group?.id,
             generalParentalConsent: user.student.generalParentalConsent,
             specialParentalConsent: specialParentalConsent,
         }).end();

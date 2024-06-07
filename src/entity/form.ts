@@ -91,8 +91,8 @@ export async function addStudent(req: express.Request<{name: string, username: s
     await AppDataSource
         .createQueryBuilder()
         .relation(Form, "students")
-        .of(foundForm)
-        .add(student);
+        .of(foundForm.id)
+        .add(student.userId);
 
     res.status(200).end();
 }

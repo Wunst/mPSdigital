@@ -1,9 +1,11 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, JoinTable, OneToOne, Tree } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, JoinTable, OneToOne, Tree, MoreThan } from 'typeorm';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
 import { Student } from './student';
 import { SpecialParentalConsent } from './specialParentalConsent';
+import { group } from 'console';
+import { Group } from './group';
 
 export enum Role {
     student = 'student',
@@ -84,6 +86,8 @@ export async function info(req: express.Request, res: express.Response) {
         return;
     }
 
+    const group = await Group.findOne({where: {student: user.student, endDate: !null && MoreThan(new Date())}});
+
     if (user.student) {
         let specialParentalConsent = false;
         if(await SpecialParentalConsent.findOne({
@@ -92,10 +96,12 @@ export async function info(req: express.Request, res: express.Response) {
         })){
             specialParentalConsent = true;
         }
+
         res.status(200).json({
             username: user.username,
             role: user.role,
             form: user.student.form,
+            group: group,
             generalParentalConsent: user.student.generalParentalConsent,
             specialParentalConsent: specialParentalConsent,
         }).end();

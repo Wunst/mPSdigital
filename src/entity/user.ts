@@ -78,14 +78,14 @@ export async function info(req: express.Request, res: express.Response) {
         return;
     }
 
-    const user = await User.findOneBy({username: req.params['username']});
+    const user = await User.findOne({relations: {student: true}, where: {username: req.params['username']}});
     if (!user) {
         res.status(404).end();
         return;
     }
 
     if (user.student) {
-        let specialParentalConsent = false;
+        let specialParentalConsent = false;s
         if(await SpecialParentalConsent.findOne({
             relations: {group: true, student: true},
             where: {group: req.body['groupID'], student: user.student}

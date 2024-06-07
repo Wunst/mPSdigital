@@ -85,7 +85,7 @@ export async function info(req: express.Request, res: express.Response) {
     }
 
     if (user.student) {
-        let specialParentalConsent = false;s
+        let specialParentalConsent = false;
         if(await SpecialParentalConsent.findOne({
             relations: {group: true, student: true},
             where: {group: req.body['groupID'], student: user.student}

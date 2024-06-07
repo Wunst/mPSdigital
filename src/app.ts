@@ -43,7 +43,7 @@ app.use(bodyParser.json());
 app.use(cors(cors_set));
 
 app.use(session({
-    secret: 'my secret', // TODO: Replace with real secret
+    secret: process.env["COOKIE_SECRET"]!,
     resave: false,
     saveUninitialized: false,
     cookie: {

@@ -4,6 +4,7 @@ import { Role, User } from './user';
 import express from 'express';
 import auth from '../auth';
 import { Student } from './student';
+import { format } from 'path';
 
 
 @Entity()
@@ -103,6 +104,7 @@ export async function list(req: express.Request, res: express.Response) {
         res.status(401).end();
         return;
     }
+    
 
     res.status(200).json(
         (await Form.find()).map(form => ({
@@ -111,36 +113,29 @@ export async function list(req: express.Request, res: express.Response) {
     ).end();
 }
 
-export async function listStudent(req: express.Request, res: express.Response) {
+export async function listStudent(req: express.Request<{name: string}>, res: express.Response) {
+    const { name } = req.params;
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
         return;
     }
 
+    if(loggedInUser.role === Role.student) {
+        res.status(403).end();
+        return;
+    }
+
     const students = await Student.find({
         relations: {
-            group: {
-                student: true,
-            },
+            form:true,
+            user:true,
         },
         where: {
-            group: {
-                endDate: Or(IsNull(), MoreThan(new Date())),
-                student: loggedInUser.role === Role.student ? {
-                    user: { id: loggedInUser.id },
-                } : {},
-            }
+            form: format.name === name,
         }
     });
-    res.status(200).json(excursions.map(excursion => { return {
-        id: excursion.id,
-        date: excursion.date,
-        description: excursion.description,
-        status: excursion.status,
-        group: {
-            id: excursion.group.id,
-            name: excursion.group.name
-        } }
-    }));
+    res.status(200).json(students.map(student => { return {
+        username: student.user.username,
+    }}));
 }

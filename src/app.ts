@@ -92,6 +92,7 @@ app.post('/form', form.create);
 app.put('/form/:name/:username',form.addStudent);
 app.get('/forms', form.list);
 app.get('/form/:name',form.listStudent);
+app.patch('/form/:name', form.archive);
 
 AppDataSource.initialize()
     .then(() => {

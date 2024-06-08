@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, IsNull } from 'typeorm';
+import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, IsNull, ManyToMany } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { Role, User } from './user';
 import express from 'express';
@@ -11,13 +11,16 @@ import { format } from 'path';
 export class Form extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
-    
-    @OneToMany(() => Student, student => student.form)
+
+    @ManyToMany(() => Student, student => student.form)
     students!: Student[]
 
     @Index({ unique: true })
     @Column()
     name!: string;
+
+    @Column()
+    isActive!: boolean;
 };
 
 export async function create(req: express.Request, res: express.Response) {
@@ -37,9 +40,24 @@ export async function create(req: express.Request, res: express.Response) {
         res.status(403).end();
         return;
     }
-    //todo: insert users
+
     const result = await Form.insert({
         name: req.body['name'],
+        isActive: true,
+    });
+
+    req.body['students'].forEach(async (username: string) => {
+        const user = await User.findOneBy({ username })
+
+        if (!user || user.role !== "student") {
+            return;
+        }
+        
+        await AppDataSource
+            .createQueryBuilder()
+            .relation(Student, "form")
+            .of(user.id)
+            .add(result.identifiers[0]);
     });
     
     res.status(201).end();
@@ -138,4 +156,35 @@ export async function listStudent(req: express.Request<{name: string}>, res: exp
     res.status(200).json(students.map(student => { return {
         username: student.user.username,
     }}));
+}
+
+export async function archive(req: express.Request<{name: string}>, res: express.Response) {
+    const { name } = req.params;
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student){
+        res.status(403).end();
+        return;
+    }
+
+    const form = await(Form.findOneBy({name: name}));
+
+    if (!form){
+        res.status(404).end();
+        return;
+    }
+
+    await Form.update(
+        { id: form.id},
+        {name: name+" "+new Date().getFullYear(),
+         isActive: false,
+        }
+    );
+    
+    res.status(201).end();
 }

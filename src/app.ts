@@ -1,3 +1,4 @@
+import https from 'https';
 import express from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
@@ -92,10 +93,15 @@ app.post('/form', form.create);
 app.put('/form/:name/:username',form.addStudent);
 app.get('/forms', form.list);
 
+const httpsServer = https.createServer({
+    key: process.env.SSL_KEY,
+    cert: process.env.SSL_CERT,
+}, app)
+
 AppDataSource.initialize()
     .then(() => {
         console.log("Data Source has been initialized!");
-        app.listen(port, () => console.log("Server listening on port", port));
+        httpsServer.listen(port, () => console.log("Server listening on port", port));
     })
     .catch((err) => {
         console.error("Error during Data Source initialization", err);

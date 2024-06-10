@@ -19,7 +19,7 @@ export class Student extends BaseEntity {
     @JoinColumn({ name: 'userId' })
     user!: User;
 
-    @ManyToOne(() => Form, form => form.students)
+    @ManyToMany(() => Form, form => form.students)
     form!: Form;
 
     @Column()

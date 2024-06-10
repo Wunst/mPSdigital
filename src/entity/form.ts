@@ -2,9 +2,10 @@ import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, I
 import { AppDataSource } from '../data-source';
 import { Role, User } from './user';
 import express from 'express';
+import z from 'zod';
+import { validateRequest } from 'zod-express-middleware';
 import auth from '../auth';
 import { Student } from './student';
-
 
 @Entity()
 export class Form extends BaseEntity {
@@ -19,7 +20,13 @@ export class Form extends BaseEntity {
     name!: string;
 };
 
-export async function create(req: express.Request, res: express.Response) {
+export const routes = express.Router()
+
+routes.post("/form/:name", validateRequest({
+    params: z.object({
+        name: z.string(),
+    }),
+}), async (req, res) => {
     //todo: check for list of user
     if (!req.body['name']) {
         res.status(400).end();
@@ -42,9 +49,14 @@ export async function create(req: express.Request, res: express.Response) {
     });
     
     res.status(201).end();
-}
+})
 
-export async function addStudent(req: express.Request<{name: string, username: string}>, res: express.Response) {
+routes.put("/form/:name/:username", validateRequest({
+    params: z.object({
+        name: z.string(),
+        username: z.string(),
+    }),
+}), async (req, res) => {
     const { name, username } = req.params;
 
     const loggedInUser = await auth.getSession(req);
@@ -76,14 +88,13 @@ export async function addStudent(req: express.Request<{name: string, username: s
             form: true,
         },
         where: {
-            user: foundUser
+            user: { id: foundUser.id },
         }
     });
 
-    if(
-        !student ||
-        student.form !== null
-    ) {
+    console.log(JSON.stringify(student));
+
+    if(!student || student.form) {
         res.status(409).end();
         return;
     }
@@ -91,13 +102,13 @@ export async function addStudent(req: express.Request<{name: string, username: s
     await AppDataSource
         .createQueryBuilder()
         .relation(Form, "students")
-        .of(foundForm)
-        .add(student);
+        .of(foundForm.id)
+        .add(student.userId);
 
     res.status(200).end();
-}
+})
 
-export async function list(req: express.Request, res: express.Response) {
+routes.get("/forms", validateRequest({}), async (req, res) => {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
@@ -109,4 +120,5 @@ export async function list(req: express.Request, res: express.Response) {
             name: form.name
         }))
     ).end();
-}
+})
+

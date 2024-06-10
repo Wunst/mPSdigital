@@ -35,7 +35,8 @@ if (process.env['NODE_ENV'] === 'production') {
             Group,
             SpecialParentalConsent,
             Excursion
-        ]
+        ],
+        logging: true,
     });
 }
 

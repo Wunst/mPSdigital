@@ -4,6 +4,7 @@ import { Role, User } from './user';
 import express from 'express';
 import auth from '../auth';
 import { Student } from './student';
+import { format } from 'path';
 
 
 @Entity()
@@ -121,12 +122,40 @@ export async function list(req: express.Request, res: express.Response) {
         res.status(401).end();
         return;
     }
+    
 
     res.status(200).json(
         (await Form.find()).map(form => ({
             name: form.name
         }))
     ).end();
+}
+
+export async function listStudent(req: express.Request<{name: string}>, res: express.Response) {
+    const { name } = req.params;
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    const students = await Student.find({
+        relations: {
+            form:true,
+            user:true,
+        },
+        where: {
+            form: format.name === name,
+        }
+    });
+    res.status(200).json(students.map(student => { return {
+        username: student.user.username,
+    }}));
 }
 
 export async function archive(req: express.Request<{name: string}>, res: express.Response) {

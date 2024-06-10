@@ -5,7 +5,7 @@ import express from 'express';
 import auth from '../auth';
 import { Role, User } from './user';
 import { SpecialParentalConsent } from './specialParentalConsent';
-import { Excursion } from "./excursion";
+import { Excursion, Status } from "./excursion";
 
 export enum ProjectType {
     mPS = 'mPS',
@@ -165,6 +165,13 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
         user.push(student.user.username);
     }
 
+    let atSchool = true;
+    if(await Excursion.findOne({relations: {
+        group: true},
+        where: {date: new Date(), group:{id: group.id}, status: Status.accepted}})){
+            atSchool = false;
+    }
+
     res.status(200).json({
         id: group.id,
         name: group.name,
@@ -172,7 +179,8 @@ export async function info(req: express.Request<{ id: number }>, res: express.Re
         pinboard: group.onlinePinboard,
         startDate: group.startDate,
         endDate: group.endDate,
-        members: user
+        members: user,
+        atSchool: atSchool
     }).end();
 }
 

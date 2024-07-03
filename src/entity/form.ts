@@ -149,11 +149,9 @@ export async function listStudent(req: express.Request<{name: string}>, res: exp
         relations: {
             form:true,
             user:true,
-            group:true,
         },
         where: {
             form: {name: name},
-            group:{endDate: Or(MoreThan(new Date()), IsNull())}
         }
     });
 

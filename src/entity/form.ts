@@ -5,6 +5,7 @@ import express from 'express';
 import auth from '../auth';
 import { Student } from './student';
 import { format } from 'path';
+import { Group } from './group';
 
 
 @Entity()
@@ -150,9 +151,10 @@ export async function listStudent(req: express.Request<{name: string}>, res: exp
             user:true,
         },
         where: {
-            form: format.name === name,
+            form: {name: name}
         }
     });
+
     res.status(200).json(students.map(student => { return {
         username: student.user.username,
     }}));

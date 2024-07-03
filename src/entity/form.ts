@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, IsNull, ManyToMany } from 'typeorm';
+import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, IsNull, ManyToMany, MoreThan, Or } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { Role, User } from './user';
 import express from 'express';
@@ -149,9 +149,11 @@ export async function listStudent(req: express.Request<{name: string}>, res: exp
         relations: {
             form:true,
             user:true,
+            group:true,
         },
         where: {
-            form: {name: name}
+            form: {name: name},
+            group:{endDate: Or(MoreThan(new Date()), IsNull())}
         }
     });
 

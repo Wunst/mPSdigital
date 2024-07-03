@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, JoinTable, OneToOne, Tree, MoreThan } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, JoinTable, OneToOne, Tree, MoreThan, IsNull, Or } from 'typeorm';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
@@ -86,7 +86,7 @@ export async function info(req: express.Request, res: express.Response) {
         return;
     }
 
-    const group = await Group.findOne({where: {student: user.student, endDate: !null && MoreThan(new Date())}});
+    const group = await Group.findOne({where: {student: user.student, endDate: Or(MoreThan(new Date()), IsNull())}});
 
     if (user.student) {
         let specialParentalConsent = false;

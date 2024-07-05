@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import auth from '../auth';
 import { Student } from './student';
 import { SpecialParentalConsent } from './specialParentalConsent';
+import { hashPassword } from '../utils/hashPassword';
 
 export enum Role {
     student = 'student',
@@ -44,9 +45,6 @@ export class User extends BaseEntity {
     settings!: string;
 };
 
-async function hashPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 12);
-}
 
 export async function list(req: express.Request, res: express.Response) {
     const session = await auth.getSession(req);

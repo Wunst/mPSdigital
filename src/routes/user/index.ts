@@ -6,6 +6,7 @@ import { SpecialParentalConsent } from "../../entity/specialParentalConsent";
 import auth from "../../auth";
 import { userRoles } from "../../middleware/auth"
 import { hashPassword } from "../../utils/hashPassword";
+import { Or, IsNull, MoreThan } from "typeorm";
 
 const router = express.Router()
 
@@ -42,7 +43,9 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
             student: true
         },
         where: {
-            //group: user.student.group, 
+            group: {
+                endDate: Or(IsNull(), MoreThan(new Date()))
+            },
             student: user.student
         }
     })
@@ -52,7 +55,7 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         role: user.role,
         form: user.student?.form.name,
         generalParentalConsent: user.student?.generalParentalConsent,
-        //specialParentalConsent: specialParentalConsent
+        specialParentalConsent: specialParentalConsent
     }).end()
 })
 

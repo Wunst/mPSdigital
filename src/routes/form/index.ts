@@ -1,28 +1,16 @@
-import { BaseEntity, Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, IsNull } from 'typeorm';
-/* import { AppDataSource } from '../data-source';
-import { Role, User } from './user';
-import express from 'express';
-import z from 'zod';
-import { validateRequest } from 'zod-express-middleware';
-import auth from '../auth'; */
-import { Student } from './student';
+import express from "express"
+import z from "zod";
+import { validateRequest } from "zod-express-middleware";
+import { Role, User } from "../../entity/user";
+import { Form } from "../../entity/form";
+import { Student } from "../../entity/student";
+import { AppDataSource } from "../../data-source";
+import { Or, IsNull, MoreThan } from "typeorm";
+import auth from "../../auth";
 
-@Entity()
-export class Form extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-    
-    @OneToMany(() => Student, student => student.form)
-    students!: Student[]
+const router = express.Router()
 
-    @Index({ unique: true })
-    @Column()
-    name!: string;
-};
-
-/* export const routes = express.Router()
-
-routes.post("/form/:name", validateRequest({
+router.post("/form/:name", validateRequest({
     params: z.object({
         name: z.string(),
     }),
@@ -51,7 +39,7 @@ routes.post("/form/:name", validateRequest({
     res.status(201).end();
 })
 
-routes.put("/form/:name/:username", validateRequest({
+router.put("/form/:name/:username", validateRequest({
     params: z.object({
         name: z.string(),
         username: z.string(),
@@ -108,7 +96,7 @@ routes.put("/form/:name/:username", validateRequest({
     res.status(200).end();
 })
 
-routes.get("/forms", validateRequest({}), async (req, res) => {
+router.get("/forms", validateRequest({}), async (req, res) => {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
@@ -122,4 +110,5 @@ routes.get("/forms", validateRequest({}), async (req, res) => {
     ).end();
 })
 
- */
+export default router;
+

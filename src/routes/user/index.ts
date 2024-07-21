@@ -3,7 +3,6 @@ import z from "zod";
 import { validateRequest } from "zod-express-middleware";
 import { Role, User } from "../../entity/user";
 import { SpecialParentalConsent } from "../../entity/specialParentalConsent";
-import auth from "../../auth";
 import { userRoles } from "../../middleware/auth"
 import { hashPassword } from "../../utils/hashPassword";
 import { Or, IsNull, MoreThan } from "typeorm";

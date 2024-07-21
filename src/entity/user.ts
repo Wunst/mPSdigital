@@ -1,10 +1,10 @@
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, ManyToMany, JoinTable, OneToOne, Tree } from 'typeorm';
-import express from 'express';
+import { Student } from './student';
+/* import express from 'express';
 import bcrypt from 'bcrypt';
 import auth from '../auth';
-import { Student } from './student';
 import { SpecialParentalConsent } from './specialParentalConsent';
-import { hashPassword } from '../utils/hashPassword';
+import { hashPassword } from '../utils/hashPassword'; */
 
 export enum Role {
     student = 'student',
@@ -46,7 +46,7 @@ export class User extends BaseEntity {
 };
 
 
-export async function list(req: express.Request, res: express.Response) {
+/* export async function list(req: express.Request, res: express.Response) {
     const session = await auth.getSession(req);
 
     if (!session) {
@@ -297,4 +297,4 @@ export async function updateSettings(req: express.Request, res: express.Response
     User.update({ id: loggedInUser.id }, { settings });
 
     res.status(200).end();
-}
+} */

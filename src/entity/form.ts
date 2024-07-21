@@ -18,6 +18,9 @@ export class Form extends BaseEntity {
     @Index({ unique: true })
     @Column()
     name!: string;
+
+    @Column()
+    isActive!: boolean;
 };
 
 /* export const routes = express.Router()

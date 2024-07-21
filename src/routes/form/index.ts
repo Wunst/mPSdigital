@@ -7,9 +7,11 @@ import { Student } from "../../entity/student";
 import { AppDataSource } from "../../data-source";
 import { Or, IsNull, MoreThan } from "typeorm";
 import auth from "../../auth";
+import { resolve } from "path";
 
 const router = express.Router()
 
+// POST /form/:name - insert form
 router.post("/form/:name", validateRequest({
     params: z.object({
         name: z.string(),
@@ -39,6 +41,7 @@ router.post("/form/:name", validateRequest({
     res.status(201).end();
 })
 
+// PUT /form/:name/:username - add student to form
 router.put("/form/:name/:username", validateRequest({
     params: z.object({
         name: z.string(),
@@ -96,7 +99,8 @@ router.put("/form/:name/:username", validateRequest({
     res.status(200).end();
 })
 
-router.get("/forms", validateRequest({}), async (req, res) => {
+// GET /form - get forms
+router.get("/form", validateRequest({}), async (req, res) => {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
@@ -108,6 +112,67 @@ router.get("/forms", validateRequest({}), async (req, res) => {
             name: form.name
         }))
     ).end();
+})
+
+// GET /form/:name - list of students
+router.get("/form/:name", validateRequest({}), async (req, res) => {
+    const { name } = req.params;
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student) {
+        res.status(403).end();
+        return;
+    }
+
+    const students = await Student.find({
+        relations: {
+            form:true,
+            user:true,
+        },
+        where: {
+            form: {name: name},
+        }
+    });
+
+    res.status(200).json(students.map(student => { return {
+        username: student.user.username,
+    }}));
+})
+
+// POST /form/:name/archive - archive
+router.post("/form/:name/archive", validateRequest({}), async (req, res) => {
+    const { name } = req.params;
+
+    const loggedInUser = await auth.getSession(req);
+    if (!loggedInUser) {
+        res.status(401).end();
+        return;
+    }
+
+    if(loggedInUser.role === Role.student){
+        res.status(403).end();
+        return;
+    }
+
+    const form = await(Form.findOneBy({name: name}));
+
+    if (!form){
+        res.status(404).end();
+        return;
+    }
+
+    await Form.update(
+        { id: form.id},
+        {name: name+" "+new Date().getFullYear(),
+         isActive: false,
+        }
+    );
+    
+    res.status(201).end();
 })
 
 export default router;

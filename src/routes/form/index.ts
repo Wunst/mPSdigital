@@ -7,67 +7,41 @@ import { Student } from "../../entity/student";
 import { AppDataSource } from "../../data-source";
 import { Or, IsNull, MoreThan } from "typeorm";
 import auth from "../../auth";
-import { resolve } from "path";
+import { userRoles } from "../../middleware/auth";
 
 const router = express.Router()
 
 // POST /form/:name - insert form
-router.post("/form/:name", validateRequest({
+router.post("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
     params: z.object({
         name: z.string(),
     }),
+    body: z.object({
+        name: z.string(),
+    })
 }), async (req, res) => {
+
     //todo: check for list of user
-    if (!req.body['name']) {
-        res.status(400).end();
-        return;
-    }
 
-    const loggedInUser = await auth.getSession(req);
-    if (!loggedInUser) {
-        res.status(401).end();
-        return;
-    }
-
-    if(loggedInUser.role === Role.student){
-        res.status(403).end();
-        return;
-    }
     //todo: insert users
     const result = await Form.insert({
-        name: req.body['name'],
+        name: req.body.name,
     });
     
     res.status(201).end();
 })
 
 // PUT /form/:name/:username - add student to form
-router.put("/form/:name/:username", validateRequest({
+router.put("/:name/:username", userRoles([Role.teacher, Role.admin]), validateRequest({
     params: z.object({
         name: z.string(),
         username: z.string(),
     }),
 }), async (req, res) => {
-    const { name, username } = req.params;
 
-    const loggedInUser = await auth.getSession(req);
-    if (!loggedInUser) {
-        res.status(401).end();
-        return;
-    }
-    
-    if(loggedInUser.role === Role.student) {
-        res.status(403).end();
-        return;
-    }
 
-    if(!username || !name) {
-        res.status(400).end();
-        return;
-    }
-
-    const foundForm = await Form.findOneBy({ name: name });
-    const foundUser = await User.findOneBy({ username });
+    const foundForm = await Form.findOneBy({ name: req.params.name});
+    const foundUser = await User.findOneBy({ username: req.params.username });
     if(!foundForm || !foundUser) {
         res.status(404).end();
         return;
@@ -100,12 +74,7 @@ router.put("/form/:name/:username", validateRequest({
 })
 
 // GET /form - get forms
-router.get("/form", validateRequest({}), async (req, res) => {
-    const loggedInUser = await auth.getSession(req);
-    if (!loggedInUser) {
-        res.status(401).end();
-        return;
-    }
+router.get("/", async (req, res) => {
 
     res.status(200).json(
         (await Form.find()).map(form => ({
@@ -115,18 +84,11 @@ router.get("/form", validateRequest({}), async (req, res) => {
 })
 
 // GET /form/:name - list of students
-router.get("/form/:name", validateRequest({}), async (req, res) => {
-    const { name } = req.params;
-    const loggedInUser = await auth.getSession(req);
-    if (!loggedInUser) {
-        res.status(401).end();
-        return;
-    }
-
-    if(loggedInUser.role === Role.student) {
-        res.status(403).end();
-        return;
-    }
+router.get("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
+    params: z.object({
+        name: z.string(),
+    }),
+}), async (req, res) => {
 
     const students = await Student.find({
         relations: {
@@ -134,7 +96,7 @@ router.get("/form/:name", validateRequest({}), async (req, res) => {
             user:true,
         },
         where: {
-            form: {name: name},
+            form: {name: req.params.name},
         }
     });
 
@@ -144,21 +106,13 @@ router.get("/form/:name", validateRequest({}), async (req, res) => {
 })
 
 // POST /form/:name/archive - archive
-router.post("/form/:name/archive", validateRequest({}), async (req, res) => {
-    const { name } = req.params;
+router.post("/:name/archive", userRoles([Role.teacher, Role.admin]), validateRequest({
+params: z.object({
+    name: z.string(),
+})
+}), async (req, res) => {
 
-    const loggedInUser = await auth.getSession(req);
-    if (!loggedInUser) {
-        res.status(401).end();
-        return;
-    }
-
-    if(loggedInUser.role === Role.student){
-        res.status(403).end();
-        return;
-    }
-
-    const form = await(Form.findOneBy({name: name}));
+    const form = await(Form.findOneBy({name: req.params.name}));
 
     if (!form){
         res.status(404).end();
@@ -167,7 +121,7 @@ router.post("/form/:name/archive", validateRequest({}), async (req, res) => {
 
     await Form.update(
         { id: form.id},
-        {name: name+" "+new Date().getFullYear(),
+        {name: req.params.name+" "+new Date().getFullYear(),
          isActive: false,
         }
     );

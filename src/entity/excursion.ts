@@ -1,10 +1,10 @@
 import { BaseEntity, Column, Entity, IsNull, ManyToOne, MoreThan, Or, PrimaryGeneratedColumn } from "typeorm";
-import express from "express";
 import { Group } from "./group";
+/* import express from "express";
 import auth from '../auth';
 import { Student } from './student';
 import { Form } from './form';
-import { Role, User } from "./user"
+import { Role, User } from "./user" */
 
 export enum Status {
     pending = 'pending',
@@ -34,7 +34,7 @@ export class Excursion extends BaseEntity {
     status!: Status;
 };
 
-export async function info (req: express.Request <{id: number}>, res: express.Response) {
+/* export async function info (req: express.Request <{id: number}>, res: express.Response) {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
@@ -167,3 +167,4 @@ export async function react (req: express.Request <{id: number}>, res: express.R
 
     res.status(200).end();
 }
+ */

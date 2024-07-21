@@ -1,9 +1,9 @@
 import { Student } from "./student"
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable, Any, In, MoreThan, IsNull, Or } from 'typeorm';
 import { AppDataSource } from '../data-source';
-import express from 'express';
+/* import express from 'express';
 import auth from '../auth';
-import { Role, User } from './user';
+import { Role, User } from './user'; */
 import { SpecialParentalConsent } from './specialParentalConsent';
 import { Excursion } from "./excursion";
 
@@ -56,7 +56,7 @@ export class Group extends BaseEntity {
     excursions!: Excursion[];
 };
 
-export async function list(req: express.Request, res: express.Response) {
+/* export async function list(req: express.Request, res: express.Response) {
     const loggedInUser = await auth.getSession(req);
     if (!loggedInUser) {
         res.status(401).end();
@@ -306,7 +306,7 @@ export async function del(req: express.Request<{id: number, username: string}>, 
     if(!student) {
         res.status(403).end();
         return;
-    }
+    } */
 
     await AppDataSource
         .createQueryBuilder()

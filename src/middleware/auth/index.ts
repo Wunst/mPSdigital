@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-export async function user(req: express.Request, res: express.Response, next: express.NextFunction) {
+export async function user(req: express.Request<any>, res: express.Response, next: express.NextFunction) {
     const user = await User.findOneBy({ id: req.session.userId })
 
     if (!user) {
@@ -21,7 +21,7 @@ export async function user(req: express.Request, res: express.Response, next: ex
     next()
 }
 
-export function userRoles(roles: Role[]): express.RequestHandler { 
+export function userRoles(roles: Role[]): express.RequestHandler<any> { 
     return async (req, res, next) => {
         const user = await User.findOneBy({ id: req.session.userId })
 

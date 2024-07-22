@@ -4,14 +4,14 @@ import { validateRequest } from "zod-express-middleware";
 import { Role, User } from "../../entity/user";
 import { Student } from "../../entity/student";
 import { AppDataSource } from "../../data-source";
-import { userRoles } from "../../middleware/auth";
+import { user, userRoles } from "../../middleware/auth";
 import { Or, IsNull, MoreThan } from "typeorm";
 import { Group, ProjectType } from "../../entity/group";
 
 const router = express.Router()
 
 // GET /group - list of groups
-router.get("/", async(req, res) => {
+router.get("/", user, async(req, res) => {
 
     res.status(200).json({
         groups: await Group.find({
@@ -26,7 +26,7 @@ router.get("/", async(req, res) => {
 })
 
 // POST /group - create group
-router.post("/", validateRequest({
+router.post("/", user, validateRequest({
     body: z.object({
         name: z.string(),
         type: z.nativeEnum(ProjectType),
@@ -83,7 +83,7 @@ router.post("/", validateRequest({
 })
 
 // GET /group/:id - information about the group
-router.get("/:id", validateRequest({
+router.get("/:id", user,  validateRequest({
     params: z.object({
         id: z.coerce.number().int().nonnegative(),
     })
@@ -156,7 +156,7 @@ router.patch("/:id", userRoles([Role.teacher, Role.admin]), validateRequest({
 })
 
 // PUT /group/:id/:username - add student to group
-router.put("/:id/:username", validateRequest({
+router.put("/:id/:username", user, validateRequest({
     params: z.object({
         id: z.coerce.number().int().nonnegative(),
         username: z.string()
@@ -218,7 +218,7 @@ router.delete("/:id/:username", userRoles([Role.teacher, Role.admin]), validateR
 
 
     const foundGroup = await Group.findOneBy({ id: req.params.id });
-    const foundUser = await User.findOneBy({ username: req.params.id });
+    const foundUser = await User.findOneBy({ username: req.params.username });
     if(!foundGroup || !foundUser) {
         res.status(404).end();
         return;

@@ -6,8 +6,7 @@ import { Form } from "../../entity/form";
 import { Student } from "../../entity/student";
 import { AppDataSource } from "../../data-source";
 import { Or, IsNull, MoreThan } from "typeorm";
-import auth from "../../auth";
-import { userRoles } from "../../middleware/auth";
+import { user, userRoles } from "../../middleware/auth";
 
 const router = express.Router()
 
@@ -21,9 +20,8 @@ router.post("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
     })
 }), async (req, res) => {
 
-    //todo: check for list of user
+    //todo: check for list of user and insert them (iserv-forms)
 
-    //todo: insert users
     const result = await Form.insert({
         name: req.body.name,
     });
@@ -74,7 +72,7 @@ router.put("/:name/:username", userRoles([Role.teacher, Role.admin]), validateRe
 })
 
 // GET /form - get forms
-router.get("/", async (req, res) => {
+router.get("/", user, async (req, res) => {
 
     res.status(200).json(
         (await Form.find()).map(form => ({

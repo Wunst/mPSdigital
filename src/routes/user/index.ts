@@ -3,12 +3,14 @@ import z from "zod";
 import { validateRequest } from "zod-express-middleware";
 import { Role, User } from "../../entity/user";
 import { SpecialParentalConsent } from "../../entity/specialParentalConsent";
-import { userRoles } from "../../middleware/auth"
+import { user, userRoles } from "../../middleware/auth"
 import { hashPassword } from "../../utils/hashPassword";
 import { Or, IsNull, MoreThan } from "typeorm";
 import { Student } from "../../entity/student";
 import bcrypt from 'bcrypt';
 import { Group } from "../../entity/group";
+import { Form } from "../../entity/form";
+import { AppDataSource } from "../../data-source";
 
 const router = express.Router()
 
@@ -37,19 +39,38 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
         return;
     }
 
+    // Student without form
+    if(req.body.role == Role.student && !await Form.findOneBy({name: req.body.form})){
+        res.status(404).end();
+        return;
+    }
+
     await User.insert({
         username: req.params.username,
         password: await hashPassword(req.params.username),
         role: req.body.role,
     });
 
+    const newUser = await User.findOneBy({ username: req.params.username })
+
+    if(!newUser){
+        // todo: right statuscode, if insert of user went wrong
+        res.status(500).end();
+        return;
+    }
+
     if (req.body.role === Role.student) {
         await Student.insert({
-            user: (await User.findOneBy({ username: req.params.username }))!,
+            user: (newUser)!,
             generalParentalConsent: false,
-            form: req.body.form,
         });
     }
+
+    await AppDataSource
+    .createQueryBuilder()
+    .relation(Student, "form")
+    .of(newUser.id)
+    .add(req.body.form);
 
     res.status(201).end();
 })
@@ -196,7 +217,7 @@ router.post("/:username/passwordReset", userRoles([Role.teacher, Role.admin]), v
 })
 
 // POST /user/account/changePassword - change Password
-router.post("/changePassword", validateRequest({
+router.post("/changePassword", user,  validateRequest({
     body: z.object({
         old: z.string(),
         new: z.string(),
@@ -219,7 +240,7 @@ router.post("/changePassword", validateRequest({
 })
 
 // GET /user/account - info about the loggedin user
-router.get("/account", async (req, res) =>  {
+router.get("/account", user, async (req, res) =>  {
     
     let group = null;
     if(req.user.role === Role.student) {
@@ -234,13 +255,13 @@ router.get("/account", async (req, res) =>  {
     }).end();
 })
 
-// GET /user/account/settings
-router.get("/account/settings", async(req, res) => {
+// GET /user/account/settings -settings from the user
+router.get("/account/settings", user, async(req, res) => {
     res.type('json').send(req.user.settings).end();
 })
 
-// PUT /user/account/settings
-router.put("/account/setting", async(req, res) => {
+// PUT /user/account/settings - change settings from the user
+router.put("/account/setting", user, async(req, res) => {
     const settings = JSON.stringify(req.body);
     if (!settings) {
         res.status(400).end();
@@ -252,38 +273,8 @@ router.put("/account/setting", async(req, res) => {
     res.status(200).end();
 })
 
-// POST /user/:username/login - login
-router.post("/:username/login", validateRequest({
-    params: z.object({
-        username: z.string(),
-    }),
-    body: z.object({
-        password: z.string(),
-    })
-}), async(req, res) => {
-
-    const user = await User.findOneBy({ username: req.params.username});
-    if (!user) {
-        res.status(401).end();
-        return;
-    }
-
-    const authorized = await bcrypt.compare(req.body.password, user.password);
-    if (!authorized) {
-        res.status(401).end();
-        return;
-    }
-
-    req.session.regenerate(() => {
-        req.session.userId = user.id;
-        res.status(200).json({
-            mustChangePassword: req.body.password === user.username
-        }).end();
-    });
-})
-
 // GET /user/logout - logout
-router.get("/logout", async(req, res) => {
+router.get("/logout", user, async(req, res) => {
     req.session.destroy(() => {
         res.status(200).end();
     });

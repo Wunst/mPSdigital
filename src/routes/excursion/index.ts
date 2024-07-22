@@ -4,7 +4,7 @@ import { validateRequest } from "zod-express-middleware";
 import { Role } from "../../entity/user";
 import { Or, IsNull, MoreThan } from "typeorm";
 import { Excursion, Status } from "../../entity/excursion";
-import { userRoles } from "../../middleware/auth";
+import { user, userRoles } from "../../middleware/auth";
 import { Group } from "../../entity/group";
 
 const router = express.Router()
@@ -48,7 +48,7 @@ router.post("/", userRoles([Role.student]), validateRequest({
 })
 
 // GET /excursion/:id - information about the excursion
-router.get("/:id", validateRequest({
+router.get("/:id", user, validateRequest({
     params: z.object({
         id: z.coerce.number().int().nonnegative(),
     })
@@ -75,7 +75,7 @@ router.get("/:id", validateRequest({
 })
 
 // GET /excursion/ - list of excursions
-router.get("/", async(req, res) => {    
+router.get("/", user,  async(req, res) => {    
 
     const excursions = await Excursion.find({
         relations: {
@@ -86,7 +86,7 @@ router.get("/", async(req, res) => {
         where: {
             group: {
                 endDate: Or(IsNull(), MoreThan(new Date())),
-                student: req.body.role === Role.student ? {
+                student: req.user.role === Role.student ? {
                     user: { id: req.user.id },
                 } : {},
             }

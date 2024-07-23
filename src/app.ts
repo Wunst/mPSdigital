@@ -5,10 +5,7 @@ import cors, { CorsOptions } from 'cors';
 
 import { AppDataSource } from './data-source';
 import auth from './auth';
-import * as user from './entity/user';
-import * as group from './entity/group';
-import * as form from './entity/form';
-import * as excursion from './entity/excursion';
+import routes from "./routes"
 
 declare module 'express-session' {
     interface SessionData {
@@ -53,42 +50,14 @@ app.use(session({
     }
 }));
 
-app.get('/', auth.status);
+app.get('/account', auth.status);
 app.get('/account/settings', user.settings);
 app.put('/account/settings', user.updateSettings);
 
 app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 
-app.get('/account', auth.status);
-app.post('/account/changePassword', user.changePassword);
-
-app.get('/users', user.list);
-app.get('/user/:username', user.info);
-app.post('/user/:username', user.create);
-app.post('/user/:username/resetPassword', user.resetPassword);
-
-app.get('/groups', group.list);
-app.get('/group/:id', group.info);
-app.post('/group', group.create);
-app.put('/group/:id/:username', group.join);
-
-app.get('/excursions', excursion.list);
-app.post('/excursion', excursion.create);
-app.get('/excursion/:id', excursion.info);
-app.patch('/excursion/:id', excursion.react);
-app.patch('/user/:username', user.update)
-app.delete('/user/:username', user.del)
-app.post('/user/:username/passwordReset', user.resetPassword);
-
-app.get('/groups', group.list);
-app.post('/group', group.create);
-app.get('/group/:id', group.info);
-app.patch('/group/:id/', group.update);
-app.put('/group/:id/:username', group.join);
-app.delete('/group/:id/:username', group.del);
-
-app.use(form.routes)
+app.use("/api", routes)
 
 AppDataSource.initialize()
     .then(() => {

@@ -1,7 +1,6 @@
 import express from "express"
 import z from "zod";
-import { validateRequest } from "zod-express-middleware";
-import bcrypt from 'bcrypt';
+import { validateRequest } from "zod-express-middleware"
 import { User } from "../entity/user";
 
 const router = express.Router()
@@ -22,7 +21,7 @@ router.post("/", validateRequest({
         return;
     }
 
-    const authorized = await bcrypt.compare(req.body.password, user.password);
+    const authorized = await user.checkPassword(req.body.password)
     if (!authorized) {
         res.status(401).end();
         return;

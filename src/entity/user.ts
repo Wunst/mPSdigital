@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt"
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Index, OneToOne } from 'typeorm';
 import { Student } from './student';
 
@@ -38,4 +39,8 @@ export class User extends BaseEntity {
         default: "{}"
     })
     settings!: string;
+
+    async checkPassword(password: string): Promise<boolean> {
+        return await bcrypt.compare(password, this.password)
+    }
 };

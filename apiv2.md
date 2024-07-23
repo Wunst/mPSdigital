@@ -1,3 +1,7 @@
+## API
+
+All endpoints are relative to `/api`.
+
 ## Authentication
 
 ### ![POST](https://img.shields.io/badge/POST-blue) `/login`

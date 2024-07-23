@@ -1,9 +1,12 @@
 import express from "express"
+import { IsNull, MoreThan, Or } from "typeorm";
+import { validateRequest } from "zod-express-middleware";
+import { z } from "zod";
 
 import { user } from "../middleware/auth"
 import { Role, User } from "../entity/user";
 import { Group } from "../entity/group";
-import { IsNull, MoreThan, Or } from "typeorm";
+import { hashPassword } from "../utils/hashPassword";
 
 const router = express.Router()
 
@@ -20,6 +23,29 @@ router.get("/", user, async (req, res) =>  {
         changedPassword: req.user.changedPassword,
         group: group?.id,
     }).end();
+})
+
+// POST /account/changePassword - change Password
+router.post("/changePassword", user,  validateRequest({
+    body: z.object({
+        old: z.string(),
+        new: z.string(),
+    })
+}), async(req, res) => {
+
+    // Check old password
+    const authorized = await req.user.checkPassword(req.body.old)
+    if (!authorized) {
+        res.status(403).end();
+        return;
+    }
+    
+    await User.update(
+        { username: req.user.username },
+        { password: await hashPassword(req.body.new), changedPassword: true }
+    );
+
+    res.status(200).end();
 })
 
 // GET /account/settings -settings from the user

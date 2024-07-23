@@ -127,7 +127,7 @@ Status code | Meaning
 403         | Old password invalid
 422         | New password is insecure
 
-### ![GET](https://img.shields.io/badge/GET-green) `/users`
+### ![GET](https://img.shields.io/badge/GET-green) `/user`
 
 List users
 
@@ -307,7 +307,7 @@ Status code | Meaning
 
 ## Group API
 
-### ![GET](https://img.shields.io/badge/GET-green) `/groups`
+### ![GET](https://img.shields.io/badge/GET-green) `/group`
 
 List groups
 
@@ -466,7 +466,7 @@ Status code | Meaning
 
 ## Excursion API
 
-### ![GET](https://img.shields.io/badge/GET-green) `/excursions`
+### ![GET](https://img.shields.io/badge/GET-green) `/excursion`
 
 List excursions
 
@@ -673,7 +673,7 @@ Status code | Meaning
 404         | No form with name or no student with name
 409         | User is not a student or already in a form
 
-### ![GET](https://img.shields.io/badge/GET-green) `/forms`
+### ![GET](https://img.shields.io/badge/GET-green) `/form`
 
 List forms
 

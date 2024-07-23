@@ -3,8 +3,7 @@ import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors, { CorsOptions } from 'cors';
 
-import { AppDataSource } from './data-source';
-import auth from './auth';
+import { AppDataSource } from './data-source'
 import routes from "./routes"
 
 declare module 'express-session' {
@@ -49,9 +48,6 @@ app.use(session({
         secure: true,
     }
 }));
-
-app.post('/login', auth.login);
-app.get('/logout', auth.logout);
 
 app.use("/api", routes)
 

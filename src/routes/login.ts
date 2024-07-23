@@ -7,10 +7,8 @@ const router = express.Router()
 
 // POST /login - login
 router.post("/", validateRequest({
-    params: z.object({
-        username: z.string(),
-    }),
     body: z.object({
+        username: z.string(),
         password: z.string(),
     })
 }), async(req, res) => {

@@ -11,7 +11,11 @@ import { Group, ProjectType } from "../../entity/group";
 const router = express.Router()
 
 // GET /group - list of groups
-router.get("/", user, async(req, res) => {
+router.get("/:form", user, validateRequest({
+    params: z.object({
+        form: z.string()
+    }).partial()
+}), async(req, res) => {
 
     res.status(200).json({
         groups: await Group.find({
@@ -19,7 +23,7 @@ router.get("/", user, async(req, res) => {
                 student: true,
             },
             where: {
-                student: { form: { name: req.query.form?.toString() } },
+                student: { form: { name: req.params.form} },
             }
         }),
     }).end();
@@ -32,8 +36,10 @@ router.post("/", user, validateRequest({
         type: z.nativeEnum(ProjectType),
         startDate: z.date(),
         endDate: z.date(),
+        onlinePinnboard: z.string(),
     }).partial({
-        endDate: true
+        endDate: true,
+        onlinePinnboard: true,
     }),
 }), async(req, res) => {
 
@@ -67,7 +73,7 @@ router.post("/", user, validateRequest({
         startDate: req.body.startDate,
         endDate: req.body.endDate,
         projectType: req.body.type,
-        onlinePinboard: ''
+        onlinePinboard: req.body.onlinePinnboard
     });
     
 
@@ -208,7 +214,7 @@ router.put("/:id/:username", user, validateRequest({
     res.status(200).end();
 })
 
-// DELETE /user/:id/:username - delete user from group
+// DELETE /group/:id/:username - delete user from group
 router.delete("/:id/:username", userRoles([Role.teacher, Role.admin]), validateRequest({
     params: z.object({
         id: z.coerce.number().int().nonnegative(),

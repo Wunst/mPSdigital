@@ -99,8 +99,8 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         res.status(404).end()
         return
     }
-
-    const specialParentalConsent = !!await SpecialParentalConsent.findOne({
+    
+    const specialParentalConsent = await SpecialParentalConsent.findOne({
         relations: {
             group: true, 
             student: true
@@ -113,12 +113,19 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         }
     })
 
+    if (!specialParentalConsent){
+        res.status(500).end()
+        return
+    }
+
+
     res.status(200).json({
         username: user.username,
         role: user.role,
         form: user.student?.form.name,
+        group: specialParentalConsent?.group.id,
         generalParentalConsent: user.student?.generalParentalConsent,
-        specialParentalConsent: specialParentalConsent
+        specialParentalConsent: !!specialParentalConsent
     }).end()
 })
 

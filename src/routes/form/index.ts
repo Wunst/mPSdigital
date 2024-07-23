@@ -10,20 +10,34 @@ import { user, userRoles } from "../../middleware/auth";
 
 const router = express.Router()
 
-// POST /form/:name - insert form
-router.post("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
-    params: z.object({
-        name: z.string(),
-    }),
+// POST /form - insert form
+router.post("/", userRoles([Role.teacher, Role.admin]), validateRequest({
     body: z.object({
         name: z.string(),
-    })
+        students: z.array(z.string()),
+    }).partial({
+        students: true})
 }), async (req, res) => {
-
-    //todo: check for list of user and insert them (iserv-forms)
 
     const result = await Form.insert({
         name: req.body.name,
+        isActive: true,
+    });
+
+    //todo: add user from iser-file
+
+    req.body.students?.forEach(async (username: string) => {
+        const user = await User.findOneBy({ username })
+
+        if (!user || user.role !== Role.student) {
+            return;
+        }
+        
+        await AppDataSource
+            .createQueryBuilder()
+            .relation(Student, "form")
+            .of(user.id)
+            .add(result.identifiers[0]);
     });
     
     res.status(201).end();

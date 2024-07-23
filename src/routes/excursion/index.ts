@@ -6,6 +6,7 @@ import { Or, IsNull, MoreThan } from "typeorm";
 import { Excursion, Status } from "../../entity/excursion";
 import { user, userRoles } from "../../middleware/auth";
 import { Group } from "../../entity/group";
+import { AppDataSource } from "../../data-source";
 
 const router = express.Router()
 
@@ -70,7 +71,7 @@ router.get("/:id", user, validateRequest({
         group: excursion.group.id,
         date: excursion.date,
         description: excursion.description,
-        state: excursion.status,
+        status: excursion.status,
     }).end();
 })
 
@@ -112,7 +113,7 @@ router.patch("/:id", userRoles([Role.teacher, Role.admin]), validateRequest({
     }),
     body: z.object({
         status: z.nativeEnum(Status),
-    })
+    }).partial()
 }), async(req,res) => {
 
     const excursion = await Excursion.findOneBy({id: req.params.id});
@@ -126,6 +127,34 @@ router.patch("/:id", userRoles([Role.teacher, Role.admin]), validateRequest({
         { id: req.params.id},
         { status: req.body.status}
     );
+
+    res.status(200).end();
+})
+
+// DELETE /excursion/:id - information about the excursion
+router.get("/:id", user, validateRequest({
+    params: z.object({
+        id: z.coerce.number().int().nonnegative(),
+    })
+}), async(req, res) => {
+
+    const excursion = await Excursion.findOneBy({id: req.params.id});
+
+    if (!excursion) {
+        res.status(404).end();
+        return;
+    }
+
+    if(req.user.role === Role.student && !req.user.student.group.includes(excursion.group)) {
+        res.status(403).end();
+    }
+
+    await AppDataSource
+    .createQueryBuilder()
+    .delete()
+    .from(Excursion)
+    .where("id = :id", { id: req.params.id })
+    .execute()
 
     res.status(200).end();
 })

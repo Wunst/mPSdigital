@@ -50,10 +50,6 @@ app.use(session({
     }
 }));
 
-app.get('/account', auth.status);
-app.get('/account/settings', user.settings);
-app.put('/account/settings', user.updateSettings);
-
 app.post('/login', auth.login);
 app.get('/logout', auth.logout);
 

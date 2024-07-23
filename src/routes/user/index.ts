@@ -255,24 +255,6 @@ router.get("/account", user, async (req, res) =>  {
     }).end();
 })
 
-// GET /user/account/settings -settings from the user
-router.get("/account/settings", user, async(req, res) => {
-    res.type('json').send(req.user.settings).end();
-})
-
-// PUT /user/account/settings - change settings from the user
-router.put("/account/setting", user, async(req, res) => {
-    const settings = JSON.stringify(req.body);
-    if (!settings) {
-        res.status(400).end();
-        return;
-    }
-
-    User.update({ id: req.user.id }, { settings });
-
-    res.status(200).end();
-})
-
 // GET /user/logout - logout
 router.get("/logout", user, async(req, res) => {
     req.session.destroy(() => {

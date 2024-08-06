@@ -146,7 +146,7 @@ No data
 
 #### Response
 200
-A JSON array of usernames
+A JSON array of usernames and roles
 
 ### ![GET](https://img.shields.io/badge/GET-green) `/user/{username}`
 

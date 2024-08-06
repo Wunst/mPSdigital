@@ -76,7 +76,7 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
 // GET /user - List users
 router.get("/", userRoles([Role.teacher, Role.admin]), async (req, res) => {
     res.status(200).json((await User.find({
-        select: [ 'username' ] 
+        select: [ 'username', 'role' ] 
     })).map(u => u.username)).end()
 })
 

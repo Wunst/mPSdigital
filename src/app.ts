@@ -52,6 +52,8 @@ app.use(session({
 
 app.use("/api", routes)
 
+app.use("/", express.static("./frontend/dist"))
+
 const httpsServer = https.createServer({
     key: process.env.SSL_KEY,
     cert: process.env.SSL_CERT,

@@ -1,3 +1,7 @@
+## API
+
+All endpoints are relative to `/api`.
+
 ## Authentication
 
 ### ![POST](https://img.shields.io/badge/POST-blue) `/login`
@@ -29,7 +33,7 @@ No data
 200
 
 
-## User API
+## Account API
 
 ### ![GET](https://img.shields.io/badge/GET-green) `/account`
 
@@ -52,6 +56,7 @@ No data
 {
   "username": "string",
   "role": "student | teacher | admin",
+  "changedPassword": "boolean",
   "group": "number" // nullable
 }
 ```
@@ -123,7 +128,9 @@ Status code | Meaning
 403         | Old password invalid
 422         | New password is insecure
 
-### ![GET](https://img.shields.io/badge/GET-green) `/users`
+## User API
+
+### ![GET](https://img.shields.io/badge/GET-green) `/user`
 
 List users
 
@@ -132,14 +139,14 @@ Role    | ✔️/❌
 ------- | -----
 Admin   | ✔️
 Teacher | ✔️
-Student | ✔️
+Student | ❌
 
 #### Request body
 No data
 
 #### Response
 200
-A JSON array of usernames
+A JSON array of usernames and roles
 
 ### ![GET](https://img.shields.io/badge/GET-green) `/user/{username}`
 
@@ -172,13 +179,16 @@ Status code | Meaning
 {
   "username": "string",
   "role": "student | teacher | admin",
-  "group": "number" // nullable
+  "form": "string",
+  "group": "number", // nullable
+  "generalParentalCosent": "boolean",
+  "specialParentalCosent": "boolean",
 }
 ```
 
 ### ![POST](https://img.shields.io/badge/POST-blue) `/user/{username}`
 
-Create a new user
+Create a new user and put a student into a form
 
 User will have a default password equal to username.
 
@@ -201,6 +211,8 @@ username | yes      | Name of the user you want to update
 ```json
 {
   "role": "student | teacher | admin",
+  // only for student necessary
+  "form": "string",
 }
 ```
 
@@ -209,6 +221,8 @@ Status code | Meaning
 ----------- | -------
 201         | Created
 409         | User with that name exists
+403         | Teacher not allowed to create teacher or admin
+404        | Student without form not allowed
 
 ### ![PATCH](https://img.shields.io/badge/PATCH-yellow) `/user/{username}`
 
@@ -233,7 +247,8 @@ username | yes      | Name of the user you want to update
 ```json
 {
   "username": "string", // optional
-  "role": "student | teacher | admin" // optional
+  "role": "student | teacher | admin", // optional
+  "generalParentalConsent": "boolean", // optional
 }
 ```
 
@@ -242,6 +257,7 @@ Status code | Meaning
 ----------- | -------
 200         | User info updated
 404         | No user with name
+403         | Teacher not allowed to change teacher or admin
 
 ### ![DELETE](https://img.shields.io/badge/DELETE-red) `/user/{username}`
 
@@ -270,6 +286,7 @@ Status code | Meaning
 ----------- | -------
 200         | User deleted
 404         | No user with name
+403         | Teacher not allowed to delete teacher or admin
 
 ### ![POST](https://img.shields.io/badge/POST-blue) `/user/{username}/passwordReset`
 
@@ -300,10 +317,11 @@ Status code | Meaning
 ----------- | -------
 200         | Password reset
 404         | No user with name
+403         | Teacher not allowed to reset password of teacher or admin
 
 ## Group API
 
-### ![GET](https://img.shields.io/badge/GET-green) `/groups`
+### ![GET](https://img.shields.io/badge/GET-green) `/group`
 
 List groups
 
@@ -316,9 +334,9 @@ Student | ✔️
 
 #### Query string params
 
-Name     | Description
--------- | -----------
-form     | Only show groups with at least one student in this form
+Name     | Required | Description
+-------- | -------- | -----------
+form     | optional | Only show groups with at least one student in this form
 
 #### Request body
 No data
@@ -359,9 +377,9 @@ Status code | Meaning
   "id": "number",
   "name": "string",
   "type": "mps | herausforderung",
+  "onlinePinboard": "string",
   "startDate": "date",
   "endDate": "date", // nullable
-  "pinboard": "string",
   "members": [
     "username1",
     "username2"
@@ -391,7 +409,7 @@ Student | ✔️
   "type": "mps | herausforderung",
   "startDate": "date",
   "endDate": "date", // optional
-  "pinboard": "string", // optional
+  "pinboaonlinePinnboardrd": "string", // optional
 }
 ```
 
@@ -399,6 +417,7 @@ Student | ✔️
 Status code | Meaning
 ----------- | -------
 201         | Created
+403         | Missing student entry or student is already in a group
 
 ### ![PUT](https://img.shields.io/badge/PUT-purple) `/group/{id}/{username}`
 
@@ -433,6 +452,41 @@ Status code | Meaning
 404         | No group with ID or no student with name
 409         | User is not a student or already in a group
 
+### ![PATCH](https://img.shields.io/badge/PATCH-yellow) `/group/{id}`
+
+A teacher or admin can update every group.
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+id       | yes      | ID of group you want to update
+
+#### Request body
+```json
+{
+  "name": "string", // optional
+  "type": "mps | herausforderung",
+  "onlinePinboard": "string", // optional
+  "startDate": "date", // optional
+  "endDate": "date", // optional
+}
+```
+
+#### Response
+Status code | Meaning
+----------- | -------
+200         | Group is updated
+401         | Group does not exist
+
+
 ### ![DELETE](https://img.shields.io/badge/DELETE-red) `/group/{id}/{username}`
 
 Remove a student from a group
@@ -458,11 +512,11 @@ No data
 Status code | Meaning
 ----------- | -------
 200         | Student removed
-404         | Student not in group or no group
+404         | No student or no group
 
 ## Excursion API
 
-### ![GET](https://img.shields.io/badge/GET-green) `/excursions`
+### ![GET](https://img.shields.io/badge/GET-green) `/excursion`
 
 List excursions
 
@@ -479,8 +533,20 @@ Student | ✔️*
 No data
 
 #### Response
+A JSON array of objects like this: 
 200
-A JSON array of excursion IDs
+```json
+{
+  "id": "number",
+  "date": "date",
+  "description": "string",
+  "status": "pending | accepted | denied",
+  "group": {
+            "id": "number",
+            "name": "string"
+        }
+}
+```
 
 ### ![GET](https://img.shields.io/badge/GET-green) `/excursion/{id}`
 
@@ -509,6 +575,7 @@ Status code | Meaning
 ----------- | -------
 200         | Response includes excursion info (see below)
 404         | No excursion with ID
+403         | Not the excursion of the student
 
 200
 ```json
@@ -517,7 +584,7 @@ Status code | Meaning
   "group": "number",
   "date": "date",
   "description": "string",
-  "state": "pending | accepted | denied"
+  "status": "pending | accepted | denied"
 }
 ```
 
@@ -547,7 +614,7 @@ Student | ✔️*
 Status code | Meaning
 ----------- | -------
 201         | Created
-403         | Tried to create excursion for other group
+403         | Tried to create excursion for other group or group does not exist
 
 ### ![PATCH](https://img.shields.io/badge/PATCH-yellow) `/excursion/{id}`
 
@@ -571,7 +638,7 @@ id       | yes      | ID of the excursion
 #### Request body
 ```json
 {
-  "state": "pending | accepted | denied" // optional
+  "status": "pending | accepted | denied" // optional
 }
 ```
 
@@ -608,6 +675,7 @@ Status code | Meaning
 ----------- | -------
 200         | Excursion deleted
 404         | No excursion with ID
+403         | Student tried to delete excursion from other group
 
 ## Form API
 
@@ -615,7 +683,7 @@ Status code | Meaning
 
 Create a new form
 
-Only a teacher or admin can create as many foms as they want. The created form has no students.
+Only a teacher or admin can create as many forms as they want. The created form can has students, if added to request body.
 
 #### Permissions
 Role    | ✔️/❌
@@ -628,13 +696,37 @@ Student | ❌
 ```json
 {
   "name": "string",
+  "students": ["string"] // optional,
 }
 ```
+##### Warning
+User wich do not exist or are no students will be skipped.
 
 #### Response
 Status code | Meaning
 ----------- | -------
 201         | Created
+
+### ![POST](https://img.shields.io/badge/POST-blue) `/form/{name}/archive`
+
+Archive a form
+
+Only a teacher or admin can archive as many forms as they want.
+
+The current year will be added to the name of the form
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Response
+Status code | Meaning
+----------- | -------
+201         | Archived
+404         | Form does not exist
 
 ### ![PUT](https://img.shields.io/badge/PUT-purple) `/form/{name}/{username}`
 
@@ -665,11 +757,11 @@ No data
 Status code | Meaning
 ----------- | -------
 200         | Student added to form
-403         | Student not allowed to add other student
 404         | No form with name or no student with name
 409         | User is not a student or already in a form
 
-### ![GET](https://img.shields.io/badge/GET-green) `/forms`
+
+### ![GET](https://img.shields.io/badge/GET-green) `/form`
 
 List forms
 
@@ -686,3 +778,27 @@ No data
 #### Response
 200
 A JSON array of names from the forms
+
+### ![GET](https://img.shields.io/badge/GET-green) `/form/{name}`
+
+List of the students in a form for teacher and admin.
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+name     | yes      | Name of form you want to add to
+
+#### Request body
+No data
+
+#### Response
+200
+A JSON array of usernames

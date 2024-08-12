@@ -15,5 +15,6 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_USER: mpsdigital
       POSTGRES_PASSWORD: trustno1
+    depends_on: postgres
     ports:
       - 443:443

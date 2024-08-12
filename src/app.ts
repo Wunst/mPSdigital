@@ -16,8 +16,10 @@ declare module 'express-session' {
 let cors_set: CorsOptions = {};
 
 if (process.env['NODE_ENV'] === 'development') {
-    console.warn("\n\nDANGER: Running in a development environment. \
-Will pretend ALL connections are secure.\n\n");
+    console.warn(`
+        DANGER: Running in a development environment. \
+        Will pretend ALL connections are secure.\n\n
+    `);
 
     Object.defineProperty(express.request, 'secure', {
         get() {
@@ -31,7 +33,7 @@ Will pretend ALL connections are secure.\n\n");
     };
 }
 
-const port = 3001;
+const port = process.env[`HTTPS_PORT`] || 443;
 
 const app = express();
 

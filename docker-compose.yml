@@ -8,18 +8,12 @@ services:
       POSTGRES_USER: mpsdigital
       POSTGRES_PASSWORD: trustno1
   mpsdigital:
-    image: node:22.2-bookworm
-    restart: always
+    build: .
     user: node
-    working_dir: /home/node/app
     environment:
       NODE_ENV: production
       POSTGRES_HOST: postgres
       POSTGRES_USER: mpsdigital
       POSTGRES_PASSWORD: trustno1
-    volumes:
-      - ./:/home/node/app
     ports:
       - 443:443
-    command:
-      - npm install yarn && yarn build --cwd frontend && npm install && npm start

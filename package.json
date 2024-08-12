@@ -4,9 +4,10 @@
   "description": "Verwaltungssystem für Lehrkräfte und Schüler im Projektunterricht",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
     "setup": "dotenvx run -- ./scripts/setup.js",
-    "prestart": "tsc",
-    "start": "dotenvx run -- node built/app.js"
+    "start": "dotenvx run -- node built/app.js",
+    "dev": "tsc && dotenvx run -- node/build/app.js"
   },
   "repository": {
     "type": "git",

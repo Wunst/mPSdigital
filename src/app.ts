@@ -37,6 +37,9 @@ const port = process.env[`HTTPS_PORT`] || 443;
 
 const app = express();
 
+// Allow behind reverse proxy.
+app.set("trust proxy", 1)
+
 app.use(bodyParser.json());
 
 app.use(cors(cors_set));

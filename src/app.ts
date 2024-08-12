@@ -33,7 +33,8 @@ if (process.env['NODE_ENV'] === 'development') {
     };
 }
 
-const port = process.env[`HTTPS_PORT`] || 443;
+const httpsPort = process.env[`HTTPS_PORT`] || 443
+const httpPort = process.env[`HTTP_PORT`] || 80;
 
 const app = express();
 
@@ -67,7 +68,12 @@ const httpsServer = https.createServer({
 AppDataSource.initialize()
     .then(() => {
         console.log("Data Source has been initialized!");
-        httpsServer.listen(port, () => console.log("Server listening on port", port));
+
+        // HTTPS server
+        httpsServer.listen(httpsPort, () => console.log("HTTPS server listening on port", httpsPort))
+
+        // HTTP server for proxy
+        app.listen(httpPort, () => console.log("HTTP server listening on port", httpPort))
     })
     .catch((err) => {
         console.error("Error during Data Source initialization", err);

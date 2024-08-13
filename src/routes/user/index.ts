@@ -38,10 +38,6 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
     }
 
     // Student without form
-    if(req.body.role == Role.student && !await Form.findOneBy({name: req.body.form})){
-        res.status(404).end();
-        return;
-    }
 
     await User.insert({
         username: req.params.username,
@@ -56,13 +52,15 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
             user: newUser,
             generalParentalConsent: false,
         });
-    }
 
-    await AppDataSource
-    .createQueryBuilder()
-    .relation(Student, "form")
-    .of(newUser.id)
-    .add(req.body.form);
+        if (req.body.form && await Form.findOneBy({name: req.body.form})) {
+            await AppDataSource
+                .createQueryBuilder()
+                .relation(Student, "form")
+                .of(newUser.id)
+                .add(req.body.form);
+        }
+    }
 
     res.status(201).end();
 })

@@ -49,17 +49,11 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
         role: req.body.role,
     });
 
-    const newUser = await User.findOneBy({ username: req.params.username })
-
-    if(!newUser){
-        // todo: right statuscode, if insert of user went wrong
-        res.status(500).end();
-        return;
-    }
+    const newUser = (await User.findOneBy({ username: req.params.username }))!
 
     if (req.body.role === Role.student) {
         await Student.insert({
-            user: (newUser)!,
+            user: newUser,
             generalParentalConsent: false,
         });
     }
@@ -112,12 +106,6 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
             student: user.student
         }
     })
-
-    if (!specialParentalConsent){
-        res.status(500).end()
-        return
-    }
-
 
     res.status(200).json({
         username: user.username,

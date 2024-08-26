@@ -10,6 +10,11 @@ declare global {
 }
 
 export async function user(req: express.Request<any>, res: express.Response, next: express.NextFunction) {
+    if (!req.session || !req.session.userId) {
+      res.status(401).end()
+      return
+    }
+
     const user = await User.findOneBy({ id: req.session.userId })
 
     if (!user) {
@@ -23,6 +28,11 @@ export async function user(req: express.Request<any>, res: express.Response, nex
 
 export function userRoles(roles: Role[]): express.RequestHandler<any> { 
     return async (req, res, next) => {
+        if (!req.session || !req.session.userId) {
+          res.status(401).end()
+          return
+        }
+
         const user = await User.findOneBy({ id: req.session.userId })
 
         if (!user) {
@@ -39,4 +49,3 @@ export function userRoles(roles: Role[]): express.RequestHandler<any> {
         next()
     }
 }
-

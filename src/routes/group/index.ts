@@ -11,8 +11,8 @@ import { Group, ProjectType } from "../../entity/group";
 const router = express.Router()
 
 // GET /group - list of groups
-router.get("/:form", user, validateRequest({
-    params: z.object({
+router.get("/", user, validateRequest({
+    query: z.object({
         form: z.string()
     }).partial()
 }), async(req, res) => {
@@ -23,7 +23,7 @@ router.get("/:form", user, validateRequest({
                 student: true,
             },
             where: {
-                student: { form: { name: req.params.form} },
+                student: { form: { name: req.query.form } },
             }
         }),
     }).end();

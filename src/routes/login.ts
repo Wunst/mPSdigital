@@ -13,7 +13,7 @@ router.post("/", validateRequest({
     })
 }), async(req, res) => {
 
-    const user = await User.findOneBy({ username: req.params.username});
+    const user = await User.findOneBy({ username: req.body.username});
     if (!user) {
         res.status(401).end();
         return;

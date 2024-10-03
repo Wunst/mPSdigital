@@ -108,7 +108,7 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
     res.status(200).json({
         username: user.username,
         role: user.role,
-        form: user.student?.form.name,
+        form: user.student?.form?.name,
         group: specialParentalConsent?.group.id,
         generalParentalConsent: user.student?.generalParentalConsent,
         specialParentalConsent: !!specialParentalConsent

@@ -20,7 +20,7 @@ export class Student extends BaseEntity {
     user!: User;
 
     @ManyToOne(() => Form, form => form.students)
-    form!: Form;
+    form!: Form | undefined;
 
     @Column()
     generalParentalConsent!: boolean;

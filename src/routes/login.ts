@@ -21,8 +21,7 @@ router.post("/", validateRequest({
 
     const authorized = await user.checkPassword(req.body.password)
     if (!authorized) {
-        //just for debugging, otherwise 401
-        res.status(402).end();
+        res.status(401).end();
         return;
     }
 

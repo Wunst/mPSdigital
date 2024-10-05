@@ -409,7 +409,7 @@ Student | ✔️
   "type": "mPS" | "herausforderung",
   "startDate": "date",
   "endDate": "date", // optional
-  "pinboaonlinePinnboardrd": "string", // optional
+  "onlinePinboard": "string", // optional
 }
 ```
 

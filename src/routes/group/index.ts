@@ -36,10 +36,10 @@ router.post("/", user, validateRequest({
         type: z.nativeEnum(ProjectType),
         startDate: z.coerce.date(),
         endDate: z.coerce.date(),
-        onlinePinnboard: z.string(),
+        onlinePinboard: z.string(),
     }).partial({
         endDate: true,
-        onlinePinnboard: true,
+        onlinePinboard: true,
     }),
 }), async(req, res) => {
 
@@ -73,7 +73,7 @@ router.post("/", user, validateRequest({
         startDate: req.body.startDate,
         endDate: req.body.endDate,
         projectType: req.body.type,
-        onlinePinboard: req.body.onlinePinnboard
+        onlinePinboard: req.body.onlinePinboard
     });
     
 

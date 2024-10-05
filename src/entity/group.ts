@@ -16,7 +16,9 @@ export class Group extends BaseEntity {
     @Column()
     name!: string;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     onlinePinboard!: string;
 
     @Column({

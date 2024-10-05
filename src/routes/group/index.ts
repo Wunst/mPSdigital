@@ -34,8 +34,8 @@ router.post("/", user, validateRequest({
     body: z.object({
         name: z.string(),
         type: z.nativeEnum(ProjectType),
-        startDate: z.date(),
-        endDate: z.date(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date(),
         onlinePinnboard: z.string(),
     }).partial({
         endDate: true,
@@ -137,8 +137,8 @@ router.patch("/:id", userRoles([Role.teacher, Role.admin]), validateRequest({
         name: z.string(),
         type: z.nativeEnum(ProjectType),
         onlinePinboard: z.string(),
-        startDate: z.date(),
-        endDate: z.date(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date(),
     }).partial()
 }), async(req, res) => {
 

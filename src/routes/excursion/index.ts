@@ -14,7 +14,7 @@ const router = express.Router()
 router.post("/", userRoles([Role.student]), validateRequest({
     body: z.object({
         group: z.number(),
-        date: z.date(),
+        date: z.coerce.date(),
         description: z.string(),
     })
 }), async(req, res) => {

@@ -376,7 +376,7 @@ Status code | Meaning
 {
   "id": "number",
   "name": "string",
-  "type": "mps | herausforderung",
+  "type": "mPS" | "herausforderung",
   "onlinePinboard": "string",
   "startDate": "date",
   "endDate": "date", // nullable
@@ -406,7 +406,7 @@ Student | ✔️
 ```json
 {
   "name": "string",
-  "type": "mps | herausforderung",
+  "type": "mPS" | "herausforderung",
   "startDate": "date",
   "endDate": "date", // optional
   "pinboaonlinePinnboardrd": "string", // optional
@@ -473,7 +473,7 @@ id       | yes      | ID of group you want to update
 ```json
 {
   "name": "string", // optional
-  "type": "mps | herausforderung",
+  "type": "mPS" | "herausforderung", // optional
   "onlinePinboard": "string", // optional
   "startDate": "date", // optional
   "endDate": "date", // optional

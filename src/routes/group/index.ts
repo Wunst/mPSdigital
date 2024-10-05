@@ -209,7 +209,7 @@ router.put("/:id/:username", user, validateRequest({
         .createQueryBuilder()
         .relation(Student, "group")
         .of(student)
-        .add(req.body.id);
+        .add(req.params.id);
 
     res.status(200).end();
 })

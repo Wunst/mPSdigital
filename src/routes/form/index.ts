@@ -18,6 +18,10 @@ router.post("/", userRoles([Role.teacher, Role.admin]), validateRequest({
     }).partial({
         students: true})
 }), async (req, res) => {
+    if (await Form.findBy({ name: req.body.name })) {
+        res.status(409).end()
+        return
+    }
 
     const result = await Form.insert({
         name: req.body.name,

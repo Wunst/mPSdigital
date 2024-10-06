@@ -81,7 +81,9 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
 }), async (req, res) => {
     const user = await User.findOne({
         relations: {
-            student: { group: true },
+            student: { group: true,
+                form: true
+             },
         },
         where: {
             username: req.params.username,

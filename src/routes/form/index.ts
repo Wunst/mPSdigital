@@ -18,7 +18,7 @@ router.post("/", userRoles([Role.teacher, Role.admin]), validateRequest({
     }).partial({
         students: true})
 }), async (req, res) => {
-    if (await Form.findBy({ name: req.body.name })) {
+    if (await Form.findOneBy({ name: req.body.name })) {
         res.status(409).end()
         return
     }

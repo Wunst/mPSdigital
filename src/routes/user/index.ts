@@ -10,6 +10,7 @@ import { Student } from "../../entity/student";
 import { Form } from "../../entity/form";
 import { AppDataSource } from "../../data-source";
 import { Group } from "../../entity/group";
+import { group } from "console";
 
 const router = express.Router()
 
@@ -112,7 +113,7 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         username: user.username,
         role: user.role,
         form: user.student?.form?.name,
-        group: user.student.group.find(group => group.isCurrent()),
+        group: user.student.group.find((group) => group.isCurrent() === true),
         generalParentalConsent: user.student?.generalParentalConsent,
         specialParentalConsent: !!specialParentalConsent
     }).end()

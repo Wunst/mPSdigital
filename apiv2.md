@@ -381,8 +381,8 @@ Status code | Meaning
   "startDate": "date",
   "endDate": "date", // nullable
   "members": [
-    "username1",
-    "username2"
+    ["username1","generalParentalConsent1", "specialParentalConsent1"],
+    ["username2","generalParentalConsent2", "specialParentalConsent2"]
   ]
 }
 ```

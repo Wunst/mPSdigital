@@ -111,11 +111,11 @@ router.get("/:id", user,  validateRequest({
         return;
     }
 
-    const user :string[] = [];
+    /*const user :string[] = [];
     for (let index = 0; index < group.student.length; index++) {
         const student = group.student[index];
         user.push(student.user.username);
-    }
+    }*/
 
     res.status(200).json({
         id: group.id,
@@ -124,7 +124,7 @@ router.get("/:id", user,  validateRequest({
         onlinePinboard: group.onlinePinboard,
         startDate: group.startDate,
         endDate: group.endDate,
-        members: user
+        members: group.student
     }).end();
 })
 

@@ -39,8 +39,6 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
         return;
     }
 
-    // Student without form
-
     await User.insert({
         username: req.params.username,
         password: await hashPassword(req.params.username),

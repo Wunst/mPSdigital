@@ -1,5 +1,5 @@
 import express from "express"
-import z from "zod";
+import z, { boolean } from "zod";
 import { validateRequest } from "zod-express-middleware";
 import { Role, User } from "../../entity/user";
 import { Student } from "../../entity/student";
@@ -111,11 +111,13 @@ router.get("/:id", user,  validateRequest({
         return;
     }
 
-    /*const user :string[] = [];
+    const user :Object[] = [];
     for (let index = 0; index < group.student.length; index++) {
         const student = group.student[index];
-        user.push(student.user.username);
-    }*/
+        user.push({ username: student.user.username,
+            generalParentalconsent: student.generalParentalConsent,
+            specialParentalConsent: student.specialParentalConsent});
+    }
 
     res.status(200).json({
         id: group.id,
@@ -124,7 +126,7 @@ router.get("/:id", user,  validateRequest({
         onlinePinboard: group.onlinePinboard,
         startDate: group.startDate,
         endDate: group.endDate,
-        members: group.student
+        members: user
     }).end();
 })
 

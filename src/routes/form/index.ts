@@ -73,7 +73,6 @@ router.put("/:name/:username", userRoles([Role.teacher, Role.admin]), validateRe
         }
     });
 
-    console.log(JSON.stringify(student));
 
     if(!student || student.form) {
         res.status(409).end();

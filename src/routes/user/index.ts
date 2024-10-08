@@ -53,15 +53,11 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
             generalParentalConsent: false,
         });
 
-    const student = await Student.findOneBy({
-        userId: newUser.id
-    })
-
         if (req.body.form && await Form.findOneBy({name: req.body.form})) {
             await AppDataSource
                 .createQueryBuilder()
                 .relation(Student, "form")
-                .of(student?.userId)
+                .of(newUser.id)
                 .add(req.body.form);
         }
     }

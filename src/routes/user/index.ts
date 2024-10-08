@@ -44,10 +44,8 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
         role: req.body.role,
     });
 
-    const newUser = (await User.findOne({ 
-        where: {username: req.params.username },
-        relations: {student: true}
-    }))!
+    const newUser = (await User.findOneBy({ 
+        username: req.params.username }))!
 
     if (req.body.role === Role.student) {
         await Student.insert({
@@ -55,11 +53,15 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
             generalParentalConsent: false,
         });
 
+    const student = await Student.findOneBy({
+        userId: newUser.id
+    })
+
         if (req.body.form && await Form.findOneBy({name: req.body.form})) {
             await AppDataSource
                 .createQueryBuilder()
                 .relation(Student, "form")
-                .of(newUser.student.userId)
+                .of(student?.userId)
                 .add(req.body.form);
         }
     }

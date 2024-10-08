@@ -113,7 +113,7 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         username: user.username,
         role: user.role,
         form: user.student?.form?.name,
-        group: user.student.group.find((group) => group.isCurrent() === true),
+        group: user.student?.group?.find((group) => group.isCurrent() === true),
         generalParentalConsent: user.student?.generalParentalConsent,
         specialParentalConsent: !!specialParentalConsent
     }).end()

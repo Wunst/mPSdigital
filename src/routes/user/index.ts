@@ -143,13 +143,6 @@ router.patch("/:username", userRoles([Role.teacher, Role.admin]), validateReques
         res.status(403).end()
         return
     }
-    
-    await User.update({ 
-        username: req.params.username 
-    }, { 
-        username: req.body.username,
-        role: req.body.role
-    })
 
     if (user.role === Role.student) {
         await Student.update({
@@ -158,6 +151,14 @@ router.patch("/:username", userRoles([Role.teacher, Role.admin]), validateReques
             generalParentalConsent: req.body.generalParentalConsent
         })
     }
+
+    await User.update({ 
+        username: req.params.username 
+    }, { 
+        role: req.body.role,
+        username: req.body.username,
+    })
+
     res.status(200).end()
 })
 

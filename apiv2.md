@@ -406,7 +406,7 @@ Student | ✔️
 ```json
 {
   "name": "string",
-  "type": "mPS" | "herausforderung",
+  "type": "mPS" | "Herausforderung",
   "startDate": "date",
   "endDate": "date", // optional
   "onlinePinboard": "string", // optional

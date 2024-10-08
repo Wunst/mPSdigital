@@ -22,7 +22,6 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
     body: z.object({
         role: z.nativeEnum(Role),
         form: z.string(),
-    // todo: student with no form possible
     }).partial({form: true})
 }), async(req, res) => {
 
@@ -45,7 +44,10 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
         role: req.body.role,
     });
 
-    const newUser = (await User.findOneBy({ username: req.params.username }))!
+    const newUser = (await User.findOne({ 
+        where: {username: req.params.username },
+        relations: {student: true}
+    }))!
 
     if (req.body.role === Role.student) {
         await Student.insert({
@@ -57,7 +59,7 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
             await AppDataSource
                 .createQueryBuilder()
                 .relation(Student, "form")
-                .of(newUser.id)
+                .of(newUser.student.userId)
                 .add(req.body.form);
         }
     }

@@ -55,7 +55,14 @@ router.get("/:id", user, validateRequest({
     })
 }), async(req, res) => {
 
-    const excursion = await Excursion.findOneBy({id: req.params.id});
+    const excursion = await Excursion.findOne({
+        relations: {
+            group: true
+        },
+        where: {
+            id: req.params.id
+        }
+    });
 
     if (!excursion) {
         res.status(404).end();

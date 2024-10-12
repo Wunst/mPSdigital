@@ -1,14 +1,11 @@
+import https from 'https';
 import express from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors, { CorsOptions } from 'cors';
 
-import { AppDataSource } from './data-source';
-import auth from './auth';
-import * as user from './entity/user';
-import * as group from './entity/group';
-import * as form from './entity/form';
-import * as excursion from './entity/excursion';
+import { AppDataSource } from './data-source'
+import routes from "./routes"
 
 declare module 'express-session' {
     interface SessionData {
@@ -19,8 +16,10 @@ declare module 'express-session' {
 let cors_set: CorsOptions = {};
 
 if (process.env['NODE_ENV'] === 'development') {
-    console.warn("\n\nDANGER: Running in a development environment. \
-Will pretend ALL connections are secure.\n\n");
+    console.warn(`
+        DANGER: Running in a development environment. \
+        Will pretend ALL connections are secure.\n\n
+    `);
 
     Object.defineProperty(express.request, 'secure', {
         get() {
@@ -34,16 +33,20 @@ Will pretend ALL connections are secure.\n\n");
     };
 }
 
-const port = 3001;
+const httpsPort = process.env[`HTTPS_PORT`] || 443
+const httpPort = process.env[`HTTP_PORT`] || 80;
 
 const app = express();
+
+// Allow behind reverse proxy.
+app.set("trust proxy", 1)
 
 app.use(bodyParser.json());
 
 app.use(cors(cors_set));
 
 app.use(session({
-    secret: 'my secret', // TODO: Replace with real secret
+    secret: process.env["COOKIE_SECRET"]!,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -53,51 +56,24 @@ app.use(session({
     }
 }));
 
-app.get('/', auth.status);
-app.get('/account/settings', user.settings);
-app.put('/account/settings', user.updateSettings);
+app.use("/api", routes)
 
-app.post('/login', auth.login);
-app.get('/logout', auth.logout);
+app.use("/", express.static("./frontend/dist"))
 
-app.get('/account', auth.status);
-app.post('/account/changePassword', user.changePassword);
-
-app.get('/users', user.list);
-app.get('/user/:username', user.info);
-app.post('/user/:username', user.create);
-app.post('/user/:username/resetPassword', user.resetPassword);
-
-app.get('/groups', group.list);
-app.get('/group/:id', group.info);
-app.post('/group', group.create);
-app.put('/group/:id/:username', group.join);
-
-app.get('/excursions', excursion.list);
-app.post('/excursion', excursion.create);
-app.get('/excursion/:id', excursion.info);
-app.patch('/excursion/:id', excursion.react);
-app.patch('/user/:username', user.update)
-app.delete('/user/:username', user.del)
-app.post('/user/:username/passwordReset', user.resetPassword);
-
-app.get('/groups', group.list);
-app.post('/group', group.create);
-app.get('/group/:id', group.info);
-app.patch('/group/:id/', group.update);
-app.put('/group/:id/:username', group.join);
-app.delete('/group/:id/:username', group.del);
-
-app.post('/form', form.create);
-app.put('/form/:name/:username',form.addStudent);
-app.get('/forms', form.list);
-app.get('/form/:name',form.listStudent);
-app.post('/form/:name/archive', form.archive);
+const httpsServer = https.createServer({
+    key: process.env.SSL_KEY,
+    cert: process.env.SSL_CERT,
+}, app)
 
 AppDataSource.initialize()
     .then(() => {
         console.log("Data Source has been initialized!");
-        app.listen(port, () => console.log("Server listening on port", port));
+
+        // HTTPS server
+        httpsServer.listen(httpsPort, () => console.log("HTTPS server listening on port", httpsPort))
+
+        // HTTP server for proxy
+        app.listen(httpPort, () => console.log("HTTP server listening on port", httpPort))
     })
     .catch((err) => {
         console.error("Error during Data Source initialization", err);

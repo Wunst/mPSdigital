@@ -1,7 +1,7 @@
 import { Student } from "./student"
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany,JoinTable } from 'typeorm';
 import { SpecialParentalConsent } from './specialParentalConsent';
-import { Excursion } from "./excursion";
+import { Excursion, Status } from "./excursion";
 
 export enum ProjectType {
     mPS = 'mPS',

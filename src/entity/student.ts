@@ -19,8 +19,8 @@ export class Student extends BaseEntity {
     @JoinColumn({ name: 'userId' })
     user!: User;
 
-    @ManyToOne(() => Form, form => form.students)
-    form!: Form | undefined;
+    @ManyToMany(() => Form, form => form.students)
+    form!: Form;
 
     @Column()
     generalParentalConsent!: boolean;

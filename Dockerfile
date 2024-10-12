@@ -8,9 +8,8 @@ RUN cd /app \
 && npm install \
 && npm run build \
 # Build frontend
-&& npm install --no-save yarn \
 && cd /app/frontend \
-&& yarn \
-&& yarn build
+&& npm install \
+&& npm run build
 
 CMD [ "npm", "start" ]

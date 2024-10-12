@@ -376,13 +376,13 @@ Status code | Meaning
 {
   "id": "number",
   "name": "string",
-  "type": "mps | herausforderung",
+  "type": "mPS" | "herausforderung",
   "onlinePinboard": "string",
   "startDate": "date",
   "endDate": "date", // nullable
   "members": [
-    "username1",
-    "username2"
+    ["username1","generalParentalConsent1", "specialParentalConsent1"],
+    ["username2","generalParentalConsent2", "specialParentalConsent2"]
   ]
 }
 ```
@@ -406,10 +406,10 @@ Student | ✔️
 ```json
 {
   "name": "string",
-  "type": "mps | herausforderung",
+  "type": "mPS" | "Herausforderung",
   "startDate": "date",
   "endDate": "date", // optional
-  "pinboaonlinePinnboardrd": "string", // optional
+  "onlinePinboard": "string", // optional
 }
 ```
 
@@ -473,7 +473,7 @@ id       | yes      | ID of group you want to update
 ```json
 {
   "name": "string", // optional
-  "type": "mps | herausforderung",
+  "type": "mPS" | "herausforderung", // optional
   "onlinePinboard": "string", // optional
   "startDate": "date", // optional
   "endDate": "date", // optional

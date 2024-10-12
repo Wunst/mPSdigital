@@ -18,6 +18,10 @@ router.post("/", userRoles([Role.teacher, Role.admin]), validateRequest({
     }).partial({
         students: true})
 }), async (req, res) => {
+    if (await Form.findOneBy({ name: req.body.name })) {
+        res.status(409).end()
+        return
+    }
 
     const result = await Form.insert({
         name: req.body.name,
@@ -69,7 +73,6 @@ router.put("/:name/:username", userRoles([Role.teacher, Role.admin]), validateRe
         }
     });
 
-    console.log(JSON.stringify(student));
 
     if(!student || student.form) {
         res.status(409).end();

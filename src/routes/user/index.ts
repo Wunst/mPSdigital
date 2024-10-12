@@ -9,6 +9,8 @@ import { Or, IsNull, MoreThan } from "typeorm";
 import { Student } from "../../entity/student";
 import { Form } from "../../entity/form";
 import { AppDataSource } from "../../data-source";
+import { Group } from "../../entity/group";
+import { group } from "console";
 
 const router = express.Router()
 
@@ -20,7 +22,6 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
     body: z.object({
         role: z.nativeEnum(Role),
         form: z.string(),
-    // todo: student with no form possible
     }).partial({form: true})
 }), async(req, res) => {
 
@@ -37,38 +38,29 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
         return;
     }
 
-    // Student without form
-    if(req.body.role == Role.student && !await Form.findOneBy({name: req.body.form})){
-        res.status(404).end();
-        return;
-    }
-
     await User.insert({
         username: req.params.username,
         password: await hashPassword(req.params.username),
         role: req.body.role,
     });
 
-    const newUser = await User.findOneBy({ username: req.params.username })
-
-    if(!newUser){
-        // todo: right statuscode, if insert of user went wrong
-        res.status(500).end();
-        return;
-    }
+    const newUser = (await User.findOneBy({ 
+        username: req.params.username }))!
 
     if (req.body.role === Role.student) {
         await Student.insert({
-            user: (newUser)!,
+            user: newUser,
             generalParentalConsent: false,
         });
-    }
 
-    await AppDataSource
-    .createQueryBuilder()
-    .relation(Student, "form")
-    .of(newUser.id)
-    .add(req.body.form);
+        if (req.body.form && await Form.findOneBy({name: req.body.form})) {
+            await AppDataSource
+                .createQueryBuilder()
+                .relation(Student, "form")
+                .of(newUser.id)
+                .set(req.body.form);
+        }
+    }
 
     res.status(201).end();
 })
@@ -88,7 +80,9 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
 }), async (req, res) => {
     const user = await User.findOne({
         relations: {
-            student: { group: true },
+            student: { group: true,
+                form: true
+             },
         },
         where: {
             username: req.params.username,
@@ -113,17 +107,11 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         }
     })
 
-    if (!specialParentalConsent){
-        res.status(500).end()
-        return
-    }
-
-
     res.status(200).json({
         username: user.username,
         role: user.role,
-        form: user.student?.form.name,
-        group: specialParentalConsent?.group.id,
+        form: user.student?.form?.name,
+        group: user.student?.group?.find((group) => group.isCurrent() === true),
         generalParentalConsent: user.student?.generalParentalConsent,
         specialParentalConsent: !!specialParentalConsent
     }).end()
@@ -153,16 +141,22 @@ router.patch("/:username", userRoles([Role.teacher, Role.admin]), validateReques
         res.status(403).end()
         return
     }
-    
+
+    if (user.role === Role.student) {
+        await Student.update({
+            userId: user.id
+        }, {
+            generalParentalConsent: req.body.generalParentalConsent
+        })
+    }
+
     await User.update({ 
         username: req.params.username 
     }, { 
-        username: req.body.username,
         role: req.body.role,
-        student: {
-            generalParentalConsent: req.body.generalParentalConsent
-        }
+        username: req.body.username,
     })
+
     res.status(200).end()
 })
 

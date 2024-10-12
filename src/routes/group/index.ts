@@ -1,5 +1,5 @@
 import express from "express"
-import z from "zod";
+import z, { boolean } from "zod";
 import { validateRequest } from "zod-express-middleware";
 import { Role, User } from "../../entity/user";
 import { Student } from "../../entity/student";
@@ -11,8 +11,8 @@ import { Group, ProjectType } from "../../entity/group";
 const router = express.Router()
 
 // GET /group - list of groups
-router.get("/:form", user, validateRequest({
-    params: z.object({
+router.get("/", user, validateRequest({
+    query: z.object({
         form: z.string()
     }).partial()
 }), async(req, res) => {
@@ -23,7 +23,7 @@ router.get("/:form", user, validateRequest({
                 student: true,
             },
             where: {
-                student: { form: { name: req.params.form} },
+                student: { form: { name: req.query.form } },
             }
         }),
     }).end();
@@ -34,12 +34,12 @@ router.post("/", user, validateRequest({
     body: z.object({
         name: z.string(),
         type: z.nativeEnum(ProjectType),
-        startDate: z.date(),
-        endDate: z.date(),
-        onlinePinnboard: z.string(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date(),
+        onlinePinboard: z.string(),
     }).partial({
         endDate: true,
-        onlinePinnboard: true,
+        onlinePinboard: true,
     }),
 }), async(req, res) => {
 
@@ -73,7 +73,7 @@ router.post("/", user, validateRequest({
         startDate: req.body.startDate,
         endDate: req.body.endDate,
         projectType: req.body.type,
-        onlinePinboard: req.body.onlinePinnboard
+        onlinePinboard: req.body.onlinePinboard
     });
     
 
@@ -111,10 +111,12 @@ router.get("/:id", user,  validateRequest({
         return;
     }
 
-    const user :string[] = [];
+    const user :Object[] = [];
     for (let index = 0; index < group.student.length; index++) {
         const student = group.student[index];
-        user.push(student.user.username);
+        user.push({ username: student.user.username,
+            generalParentalconsent: student.generalParentalConsent,
+            specialParentalConsent: student.specialParentalConsent});
     }
 
     res.status(200).json({
@@ -137,8 +139,8 @@ router.patch("/:id", userRoles([Role.teacher, Role.admin]), validateRequest({
         name: z.string(),
         type: z.nativeEnum(ProjectType),
         onlinePinboard: z.string(),
-        startDate: z.date(),
-        endDate: z.date(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date(),
     }).partial()
 }), async(req, res) => {
 
@@ -209,7 +211,7 @@ router.put("/:id/:username", user, validateRequest({
         .createQueryBuilder()
         .relation(Student, "group")
         .of(student)
-        .add(req.body.id);
+        .add(req.params.id);
 
     res.status(200).end();
 })

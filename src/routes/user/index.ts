@@ -58,7 +58,7 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
                 .createQueryBuilder()
                 .relation(Student, "form")
                 .of(newUser.id)
-                .set(req.body.form);
+                .add(req.body.form);
         }
     }
 

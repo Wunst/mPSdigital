@@ -7,7 +7,7 @@
     "build": "tsc",
     "setup": "dotenvx run -- ./scripts/setup.js",
     "start": "dotenvx run -- node built/app.js",
-    "dev": "tsc && dotenvx run -- node/build/app.js"
+    "dev": "tsc -w & dotenvx run -- nodemon --watch built built/app.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "@types/express": "^4.17.21",
     "@types/express-session": "^1.17.10",
     "@types/node": "^20.11.5",
+    "nodemon": "^3.1.7",
     "sqlite3": "^5.1.7",
     "typescript": "^5.3.3"
   },

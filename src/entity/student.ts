@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToMany, ManyToOne, PrimaryColumn} from 'typeorm';
+import { BaseEntity, Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToMany, ManyToOne, PrimaryColumn, JoinTable} from 'typeorm';
 import { User } from "./user"
 import { Group} from "./group"
 import { SpecialParentalConsent } from './specialParentalConsent';
@@ -20,6 +20,17 @@ export class Student extends BaseEntity {
     user!: User;
 
     @ManyToMany(() => Form, form => form.students)
+    @JoinTable({
+        name: "StudentInForm",
+        joinColumn: {
+            name: "studentId",
+            referencedColumnName: "userId"
+        },
+        inverseJoinColumn: {
+            name: "formId",
+            referencedColumnName: "id"
+        }
+    })
     form!: Form;
 
     @Column()

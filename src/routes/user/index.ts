@@ -186,7 +186,7 @@ router.delete("/:username", userRoles([Role.teacher, Role.admin]), validateReque
     }
 
     await User.delete({
-        username: req.params.username,
+        username: user.username,
     })
     res.status(200).end()
 })

@@ -293,6 +293,8 @@ router.put("/:id/:username/specialConsent", userRoles([Role.admin, Role.teacher]
             }
         }))!.student
     })
+
+    res.status(200).end()
 })
 
 

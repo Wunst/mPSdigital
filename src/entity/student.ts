@@ -31,7 +31,7 @@ export class Student extends BaseEntity {
             referencedColumnName: "id"
         }
     })
-    form!: Form;
+    form!: Form[];
 
     @Column()
     generalParentalConsent!: boolean;

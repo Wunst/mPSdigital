@@ -7,6 +7,7 @@ import { AppDataSource } from "../../data-source";
 import { user, userRoles } from "../../middleware/auth";
 import { Or, IsNull, MoreThan } from "typeorm";
 import { Group, ProjectType } from "../../entity/group";
+import { SpecialParentalConsent } from "../../entity/specialParentalConsent";
 
 const router = express.Router()
 
@@ -254,6 +255,44 @@ router.delete("/:id/:username", userRoles([Role.teacher, Role.admin]), validateR
         .remove(req.params.id);
 
     res.status(200).end();
+})
+
+// PUT /group/:id/:username/specialConsent - add special parental consent for user and group
+router.put("/:id/:username/specialConsent", userRoles([Role.admin, Role.teacher]), validateRequest({
+    params: z.object({
+        id: z.coerce.number().int().nonnegative(),
+        username: z.string(),
+    })
+}), async (req, res) => {
+    const group = await Group.findOne({
+        where: {
+            id: req.params.id
+        },
+        relations: {
+            student: { user: true }
+        }
+    })
+
+    if (!group || !group.student.find(student => student.user.username == req.params.username)) {
+        res.status(404).end()
+        return
+    }
+
+    if (!group.isCurrent) {
+        res.status(403).end()
+    }
+
+    await SpecialParentalConsent.insert({
+        group, 
+        student: (await User.findOne({
+            where: {
+                username: req.params.username
+            },
+            relations: {
+                student: true
+            }
+        }))!.student
+    })
 })
 
 

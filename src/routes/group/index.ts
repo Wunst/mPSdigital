@@ -7,6 +7,8 @@ import { AppDataSource } from "../../data-source";
 import { user, userRoles } from "../../middleware/auth";
 import { Or, IsNull, MoreThan } from "typeorm";
 import { Group, ProjectType } from "../../entity/group";
+import { group } from "console";
+import { SpecialParentalConsent } from "../../entity/specialParentalConsent";
 
 const router = express.Router()
 
@@ -256,5 +258,54 @@ router.delete("/:id/:username", userRoles([Role.teacher, Role.admin]), validateR
     res.status(200).end();
 })
 
+// DELETE /group/:id/specialConsent - delete specialParentalConsent of student from current group
+router.delete("/:id/:username/specialConsent", userRoles([Role.teacher, Role.admin]), validateRequest({
+    params: z.object({
+        id: z.coerce.number().int().nonnegative(),
+        username: z.string(),
+    })
+}), async(req, res) => {
+
+
+    const foundGroup = await Group.findOne({
+        relations:{
+            student:{
+                user:true,
+            }
+        },
+        where:{id: req.params.id}});
+
+    if(!foundGroup || !foundGroup.student.find(student=>student.user.username == req.params.username)) {
+        res.status(404).end();
+        return;
+    }
+
+    if(!foundGroup.isCurrent()){
+        res.status(403).end();
+    }
+
+    const specialParentalConsent = await SpecialParentalConsent.findOne({
+        relations:{
+            student:{
+                user:true
+            },
+            group:true,
+        },
+        where:{student:{user:{username: req.params.username}},
+                group:{id: req.params.id}}
+    })
+
+    if(!specialParentalConsent){
+        res.status(404).end();
+    }
+
+    await AppDataSource
+        .createQueryBuilder()
+        .relation(Group, "specialParentalConsent")
+        .of(foundGroup)
+        .remove(specialParentalConsent);
+
+    res.status(200).end();
+})
 
 export default router;

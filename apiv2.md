@@ -381,8 +381,7 @@ Status code | Meaning
   "startDate": "date",
   "endDate": "date", // nullable
   "members": [
-    ["username1","generalParentalConsent1", "specialParentalConsent1"],
-    ["username2","generalParentalConsent2", "specialParentalConsent2"]
+    // User
   ]
 }
 ```
@@ -451,6 +450,66 @@ Status code | Meaning
 403         | Student not allowed to add other student
 404         | No group with ID or no student with name
 409         | User is not a student or already in a group
+
+### ![PUT](https://img.shields.io/badge/PUT-purple) `/group/{id}/{username}/specialConsent`
+
+Add special parental consent for user in group
+
+Special parental consent can only be added for the current group
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+id       | yes      | ID of group you want to add to
+username | yes      | Name of user to add consent for
+
+#### Request body
+No data
+
+#### Response
+Status code | Meaning
+----------- | -------
+200         | Consent added
+403         | Group is not current
+404         | No group with ID, no student with name or student not in group
+
+### ![DELETE](https://img.shields.io/badge/DELETE-red) `/group/{id}/{username}/specialConsent`
+
+Remove special parental consent for user in group
+
+Special parental consent can only be removed for the current group
+
+#### Permissions
+Role    | ✔️/❌
+------- | -----
+Admin   | ✔️
+Teacher | ✔️
+Student | ❌
+
+#### Request params
+
+Name     | Required | Description
+-------- | -------- | -----------
+id       | yes      | ID of group you want to add to
+username | yes      | Name of user to add consent for
+
+#### Request body
+No data
+
+#### Response
+Status code | Meaning
+----------- | -------
+200         | Consent removed
+403         | Group is not current
+404         | No group with ID, no student with name or consent does not exist
 
 ### ![PATCH](https://img.shields.io/badge/PATCH-yellow) `/group/{id}`
 

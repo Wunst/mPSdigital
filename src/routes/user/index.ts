@@ -72,12 +72,22 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
 
 // GET /user - List users
 router.get("/", userRoles([Role.teacher, Role.admin]), async (req, res) => {
-    res.status(200).json(await User.find({
-        select: [ 'username', 'role' ],
+    res.status(200).json((await User.find({
+        relations: {
+            student: {
+                form: true,
+                group: true
+            }
+        },
         where: {
             isActive: true
         }
-    })).end()
+    })).map(o => ({
+        username: o.username,
+        role: o.role,
+        form: o.student?.form.find(f => f.isActive),
+        group: o.student?.group
+    }))).end()
 })
 
 // GET /user/:username - Get user info
@@ -104,7 +114,9 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
     
     const specialParentalConsent = await SpecialParentalConsent.findOne({
         relations: {
-            group: true, 
+            group: {
+                excursions: true
+            }, 
             student: true
         },
         where: {
@@ -121,7 +133,10 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         form: user.student?.form.find(form => form.isActive),
         group: user.student?.group?.find((group) => group.isCurrent() === true),
         generalParentalConsent: user.student?.generalParentalConsent,
-        specialParentalConsent: !!specialParentalConsent
+        specialParentalConsent: !!specialParentalConsent,
+        hasExcursion: !!user.student?.group?.find(g => g.isCurrent)?.excursions.find(
+            e => e.date == new Date()
+        )
     }).end()
 })
 

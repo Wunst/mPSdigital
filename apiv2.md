@@ -183,6 +183,7 @@ Status code | Meaning
   "group": "number", // nullable
   "generalParentalCosent": "boolean",
   "specialParentalCosent": "boolean",
+  "hasExcursion": "boolean"
 }
 ```
 

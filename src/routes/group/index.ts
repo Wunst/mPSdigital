@@ -21,7 +21,7 @@ router.get("/", user, validateRequest({
     res.status(200).json({
         groups: await Group.find({
             relations: {
-                student: true,
+                student: { form: true },
             },
             where: {
                 student: { form: { name: req.query.form } },

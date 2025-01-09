@@ -54,27 +54,17 @@ router.put("/:name/:username", userRoles([Role.teacher, Role.admin]), validateRe
         username: z.string(),
     }),
 }), async (req, res) => {
-
-
-    const foundForm = await Form.findOneBy({ name: req.params.name});
-    const foundUser = await User.findOneBy({ username: req.params.username });
+    const foundForm = await Form.findOneBy({ name: req.params.name });
+    const foundUser = await User.findOne({
+        relations: { student: { form: true } },
+        where: {username: req.params.username}
+    });
     if(!foundForm || !foundUser) {
         res.status(404).end();
         return;
     }
 
-    const student = await Student.findOne({
-        relations: {
-            user: true,
-            form: true,
-        },
-        where: {
-            user: { id: foundUser.id },
-        }
-    });
-
-
-    if(!student || student.form) {
+    if(!foundUser.student || foundUser.student.form) {
         res.status(409).end();
         return;
     }
@@ -83,7 +73,7 @@ router.put("/:name/:username", userRoles([Role.teacher, Role.admin]), validateRe
         .createQueryBuilder()
         .relation(Form, "students")
         .of(foundForm.id)
-        .add(student.userId);
+        .add(foundUser.id)
 
     res.status(200).end();
 })

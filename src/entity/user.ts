@@ -40,7 +40,12 @@ export class User extends BaseEntity {
     })
     settings!: string;
 
+    @Column({
+        default: true
+    })
+    isActive!: boolean;
+
     async checkPassword(password: string): Promise<boolean> {
-        return await bcrypt.compare(password, this.password)
+        return this.isActive && await bcrypt.compare(password, this.password)
     }
 };

@@ -73,7 +73,10 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]), validateRequest
 // GET /user - List users
 router.get("/", userRoles([Role.teacher, Role.admin]), async (req, res) => {
     res.status(200).json(await User.find({
-        select: [ 'username', 'role' ] 
+        select: [ 'username', 'role' ],
+        where: {
+            isActive: true
+        }
     })).end()
 })
 
@@ -165,7 +168,7 @@ router.patch("/:username", userRoles([Role.teacher, Role.admin]), validateReques
     res.status(200).end()
 })
 
-// DELETE /user/:username - Delete user
+// DELETE /user/:username - Lock and anonymize user
 router.delete("/:username", userRoles([Role.teacher, Role.admin]), validateRequest({
     params: z.object({
         username: z.string(),
@@ -185,8 +188,12 @@ router.delete("/:username", userRoles([Role.teacher, Role.admin]), validateReque
         return
     }
 
-    await User.delete({
-        username: user.username,
+    await User.update({
+        id: user.id
+    }, {
+        username: "deleteduser" + user.id,
+        password: "",
+        isActive: false
     })
     res.status(200).end()
 })

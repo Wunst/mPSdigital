@@ -11,6 +11,7 @@ import { Form } from "../../entity/form";
 import { AppDataSource } from "../../data-source";
 import { Group } from "../../entity/group";
 import { group } from "console";
+import { Status } from '../../entity/excursion'
 
 const router = express.Router()
 
@@ -135,7 +136,7 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         generalParentalConsent: user.student?.generalParentalConsent,
         specialParentalConsent: !!specialParentalConsent,
         hasExcursion: !!user.student?.group?.find(g => g.isCurrent)?.excursions?.find(
-            e => e.date == new Date()
+            e => e.date == new Date() && e.status == Status.accepted
         )
     }).end()
 })

@@ -134,7 +134,7 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         group: user.student?.group?.find((group) => group.isCurrent() === true),
         generalParentalConsent: user.student?.generalParentalConsent,
         specialParentalConsent: !!specialParentalConsent,
-        hasExcursion: !!user.student?.group?.find(g => g.isCurrent)?.excursions.find(
+        hasExcursion: !!user.student?.group?.find(g => g.isCurrent)?.excursions?.find(
             e => e.date == new Date()
         )
     }).end()

@@ -64,7 +64,7 @@ router.put("/:name/:username", userRoles([Role.teacher, Role.admin]), validateRe
         return;
     }
 
-    if(!foundUser.student || foundUser.student.form) {
+    if(!foundUser.student || foundUser.student.form.find(form => form.isActive)) {
         res.status(409).end();
         return;
     }

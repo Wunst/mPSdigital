@@ -7,6 +7,8 @@ import { Student } from "../../entity/student";
 import { AppDataSource } from "../../data-source";
 import { Or, IsNull, MoreThan } from "typeorm";
 import { user, userRoles } from "../../middleware/auth";
+import { SpecialParentalConsent } from '../../entity/specialParentalConsent'
+import { Status } from '../../entity/excursion'
 
 const router = express.Router()
 
@@ -99,15 +101,27 @@ router.get("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
         relations: {
             form:true,
             user:true,
+            group: { excursions: true },
         },
         where: {
             form: {name: req.params.name},
         }
-    });
+    })
 
-    res.status(200).json(students.map(student => { return {
-        username: student.user.username,
-    }}));
+    res.status(200).json(students.map(async student => {
+        const group = student.group.find(group => group.isCurrent())
+        return {
+            username: student.user.username,
+            generalParentalConsent: student.generalParentalConsent,
+            specialParentalConsent: !!(group && await SpecialParentalConsent.findOneBy({
+                student: { userId: student.userId },
+                group: { id: group.id }
+            })),
+            hasExcursion: !!group?.excursions?.find(
+                e => e.date == new Date() && e.status == Status.accepted
+            )
+        }
+    }));
 })
 
 // POST /form/:name/archive - archive

@@ -277,7 +277,7 @@ router.put("/:id/:username/specialConsent", userRoles([Role.admin, Role.teacher]
         return
     }
 
-    if (!group.isCurrent) {
+    if (!group.isCurrent()) {
         res.status(403).end()
     }
 

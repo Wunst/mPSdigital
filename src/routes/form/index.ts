@@ -108,7 +108,7 @@ router.get("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
         }
     })
 
-    res.status(200).json(students.map(async student => {
+    res.status(200).json(await Promise.all(students.map(async student => {
         const group = student.group.find(group => group.isCurrent())
         return {
             username: student.user.username,
@@ -121,7 +121,7 @@ router.get("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
                 e => e.date == new Date() && e.status == Status.accepted
             )
         }
-    }));
+    })));
 })
 
 // POST /form/:name/archive - archive

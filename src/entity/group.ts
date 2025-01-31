@@ -8,7 +8,7 @@ export enum ProjectType {
     Herausforderung = 'Herausforderung'
 }
 
-@Entity()
+@Entity("groups")
 export class Group extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;

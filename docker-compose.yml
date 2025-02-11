@@ -7,6 +7,8 @@ services:
     environment:
       POSTGRES_USER: mpsdigital
       POSTGRES_PASSWORD: trustno1
+    volumes:
+      - ${PWD}/db-data/:/var/lib/postgresql/data/
   mpsdigital:
     build: .
     restart: always

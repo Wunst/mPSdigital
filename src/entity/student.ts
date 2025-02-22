@@ -41,11 +41,11 @@ export class Student extends BaseEntity {
     specialParentalConsent!: SpecialParentalConsent
 
     async hasSpecialParentalConsent() {
-        return !!(await SpecialParentalConsent.find({
+        return !!((await SpecialParentalConsent.find({
             relations: {
                 student: true,
                 group: true
             },
-        })).find(c => c.student.group.find(g => c.group == g)?.isCurrent())
+        }))?.find(c => c.student?.group?.find(g => c.group == g)?.isCurrent()))
     }
 };

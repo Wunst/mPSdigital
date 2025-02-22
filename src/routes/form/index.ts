@@ -113,10 +113,7 @@ router.get("/:name", userRoles([Role.teacher, Role.admin]), validateRequest({
         return {
             username: student.user.username,
             generalParentalConsent: student.generalParentalConsent,
-            specialParentalConsent: !!(group && await SpecialParentalConsent.findOneBy({
-                student: { userId: student.userId },
-                group: { id: group.id }
-            })),
+            specialParentalConsent: student.hasSpecialParentalConsent(),
             hasExcursion: !!group?.excursions?.find(
                 e => e.date == new Date() && e.status == Status.accepted
             )

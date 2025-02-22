@@ -115,9 +115,11 @@ router.get("/:id", user,  validateRequest({
     const user :Object[] = [];
     for (let index = 0; index < group.student.length; index++) {
         const student = group.student[index];
-        user.push({ username: student.user.username,
+        user.push({
+            username: student.user.username,
             generalParentalconsent: student.generalParentalConsent,
-            specialParentalConsent: student.specialParentalConsent});
+            specialParentalConsent: student.hasSpecialParentalConsent() 
+        });
     }
 
     res.status(200).json({

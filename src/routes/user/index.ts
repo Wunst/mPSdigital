@@ -112,29 +112,13 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]), validateRequest(
         res.status(404).end()
         return
     }
-    
-    const specialParentalConsent = await SpecialParentalConsent.findOne({
-        relations: {
-            group: {
-                excursions: true
-            }, 
-            student: true
-        },
-        where: {
-            group: {
-                endDate: Or(IsNull(), MoreThan(new Date()))
-            },
-            student: user.student
-        }
-    })
-
     res.status(200).json({
         username: user.username,
         role: user.role,
         form: user.student?.form.find(form => form.isActive),
         group: user.student?.group?.find((group) => group.isCurrent() === true),
         generalParentalConsent: user.student?.generalParentalConsent,
-        specialParentalConsent: !!specialParentalConsent,
+        specialParentalConsent: user.student?.hasSpecialParentalConsent(),
         hasExcursion: !!user.student?.group?.find(g => g.isCurrent())?.excursions?.find(
             e => e.date == new Date() && e.status == Status.accepted
         )

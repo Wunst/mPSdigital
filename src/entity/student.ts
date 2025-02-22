@@ -39,4 +39,13 @@ export class Student extends BaseEntity {
     @OneToMany(() => SpecialParentalConsent,
     specialParentalConsent => specialParentalConsent.student)
     specialParentalConsent!: SpecialParentalConsent
+
+    async hasSpecialParentalConsent() {
+        return !!(await SpecialParentalConsent.find({
+            relations: {
+                student: true,
+                group: true
+            },
+        })).find(c => c.student.group.find(g => c.group == g)?.isCurrent())
+    }
 };

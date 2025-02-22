@@ -87,7 +87,7 @@ router.get("/", userRoles([Role.teacher, Role.admin]), async (req, res) => {
         username: o.username,
         role: o.role,
         form: o.student?.form.find(f => f.isActive),
-        group: o.student?.group
+        group: o.student?.group.find(group => group.isCurrent())
     }))).end()
 })
 

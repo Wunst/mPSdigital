@@ -8,9 +8,7 @@ import { hashPassword } from "./hashPassword"
 export async function userByUsername(username: string): Promise<User | null> {
     return User.findOne({
         relations: {
-            student: {
-                form: true
-            }
+            student: true
         },
         where: {
             username
@@ -49,4 +47,25 @@ export async function userAddForm(username: string, formName: string): Promise<b
         .of(user.student)
         .add(form.id)
     return true
+}
+
+export async function userGetForm(user: User): Promise<Form | null> {
+    const student = user.student
+    return student && Form.findOneBy({
+        students: student,
+        isActive: true
+    })
+}
+
+export async function userList(): Promise<User[]> {
+    return User.find({
+        relations: {
+            student: {
+                form: true
+            }
+        },
+        where: {
+            isActive: true
+        }
+    })
 }

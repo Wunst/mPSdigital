@@ -4,7 +4,7 @@ import { validateRequest } from "zod-express-middleware"
 import { Role, User } from "../entity/user"
 import { userRoles } from "../middleware/auth"
 import { roleCanTarget } from "../utils/roleUtils"
-import { userByUsername, userCreate, userGetForm, userList } from "../utils/userUtils"
+import { userByUsername, userCreate, userGetForm, userList, userUpdate } from "../utils/userUtils"
 import { groupGetCurrent, groupGetSpecialConsent, groupHasExcursion } from "../utils/groupUtils"
 
 const router = express.Router()
@@ -72,4 +72,33 @@ router.get("/:username", userRoles([Role.teacher, Role.admin]),
         specialParentalConsent: await groupGetSpecialConsent(group, user),
         hasExcursion: await groupHasExcursion(group, new Date())
     })
+})
+
+// PATCH /user/:username - update user
+router.patch("/:username", userRoles([Role.teacher, Role.admin]),
+    validateRequest({
+        params: z.object({
+            username: z.string(),
+        }),
+        body: z.object({
+            username: z.string(),
+            role: z.nativeEnum(Role),
+            generalParentalConsent: z.boolean()
+        }).partial(),
+    }
+), async (req, res) => {
+    const user = await userByUsername(req.params.username)
+
+    // 404: User not found
+    if (!user) {
+        return res.status(404).end()
+    }
+
+    // 403: Not allowed to update user
+    if (!roleCanTarget(req.user.role, user.role)) {
+        return res.status(403).end()
+    }
+
+    userUpdate(user, req.body.username, req.body.role, req.body.generalParentalConsent)
+    res.status(200).end()
 })

@@ -4,6 +4,7 @@ import { Student } from "../entity/student"
 import { Role, User } from "../entity/user"
 import { formByName } from "./formUtils"
 import { hashPassword } from "./hashPassword"
+import { roleIsTeacher } from "./roleUtils"
 
 export async function userByUsername(username: string): Promise<User | null> {
     return User.findOne({
@@ -68,4 +69,26 @@ export async function userList(): Promise<User[]> {
             isActive: true
         }
     })
+}
+
+export async function userUpdate(user: User, username: string | undefined,
+    role: Role | undefined, generalParentalConsent: boolean | undefined): Promise<boolean> {
+    if (role && roleIsTeacher(user.role) != roleIsTeacher(role)) {
+        // Can't change role from student to teacher or admin.
+        return false
+    }
+
+    await User.update({
+        id: user.id
+    }, {
+        username,
+        role
+    })
+
+    await Student.update({
+        userId: user.id
+    }, {
+        generalParentalConsent
+    })
+    return true
 }

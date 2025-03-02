@@ -4,8 +4,8 @@ import { validateRequest } from "zod-express-middleware"
 import { Role, User } from "../entity/user"
 import { userRoles } from "../middleware/auth"
 import { roleCanTarget } from "../utils/roleUtils"
-import { userByUsername, userCreate } from "../utils/userUtils"
-import { hashPassword } from "../utils/hashPassword"
+import { userByUsername, userCreate, userGetForm, userList } from "../utils/userUtils"
+import { groupGetCurrent } from "../utils/groupUtils"
 
 const router = express.Router()
 
@@ -35,3 +35,14 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]),
     await userCreate(req.params.username, req.body.role, req.body.form)
     res.status(201).end()
 })
+
+// GET /user - List users
+router.get("/", userRoles([Role.teacher, Role.admin]), async (req, res) => {
+    res.status(200).json((await userList()).map(async u => ({
+        username: u.username,
+        role: u.role,
+        form: await userGetForm(u),
+        group: await groupGetCurrent(u)
+    })))
+})
+

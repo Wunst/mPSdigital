@@ -33,7 +33,9 @@ export class Student extends BaseEntity {
     })
     form!: Form[];
 
-    @Column()
+    @Column({
+        default: false
+    })
     generalParentalConsent!: boolean;
 
     @OneToMany(() => SpecialParentalConsent,

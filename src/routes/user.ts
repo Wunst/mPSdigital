@@ -5,7 +5,7 @@ import { Role, User } from "../entity/user"
 import { userRoles } from "../middleware/auth"
 import { roleCanTarget } from "../utils/roleUtils"
 import { userByUsername, userCreate, userGetForm, userList } from "../utils/userUtils"
-import { groupGetCurrent } from "../utils/groupUtils"
+import { groupGetCurrent, groupGetSpecialConsent, groupHasExcursion } from "../utils/groupUtils"
 
 const router = express.Router()
 
@@ -46,3 +46,30 @@ router.get("/", userRoles([Role.teacher, Role.admin]), async (req, res) => {
     })))
 })
 
+// GET /user/:username - Get user info
+router.get("/:username", userRoles([Role.teacher, Role.admin]),
+    validateRequest({
+        params: z.object({
+            username: z.string(),
+        }),
+    }
+), async (req, res) => {
+    const user = await userByUsername(req.params.username)
+
+    // 404: User not found
+    if (!user) {
+        return res.status(404).end()
+    }
+
+    const group = await groupGetCurrent(user)
+
+    res.status(200).json({
+        username: user.username,
+        role: user.role,
+        form: await userGetForm(user),
+        group,
+        generalParentalConsent: user.student?.generalParentalConsent,
+        specialParentalConsent: await groupGetSpecialConsent(group, user),
+        hasExcursion: await groupHasExcursion(group, new Date())
+    })
+})

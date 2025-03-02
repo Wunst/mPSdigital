@@ -28,7 +28,7 @@ export class User extends BaseEntity {
 
     @OneToOne(() => Student,
     student => student.user)
-    student!: Student;
+    student!: Student | null;
 
     @Column({
         default: false

@@ -6,6 +6,7 @@ import { userRoles } from "../middleware/auth"
 import { roleCanTarget } from "../utils/roleUtils"
 import { userByUsername, userCreate, userGetForm, userList, userUpdate } from "../utils/userUtils"
 import { groupGetCurrent, groupGetSpecialConsent, groupHasExcursion } from "../utils/groupUtils"
+import { hashPassword } from "../utils/hashPassword"
 
 const router = express.Router()
 
@@ -27,12 +28,10 @@ router.post("/:username", userRoles([Role.teacher, Role.admin]),
     }
 
     // 409: User exists
-    if (await userByUsername(req.params.username)) {
+    if (!await userCreate(req.params.username, req.body.role, req.body.form)) {
         return res.status(409).end()
     }
-
-    // Add user
-    await userCreate(req.params.username, req.body.role, req.body.form)
+    
     res.status(201).end()
 })
 
@@ -99,6 +98,65 @@ router.patch("/:username", userRoles([Role.teacher, Role.admin]),
         return res.status(403).end()
     }
 
-    userUpdate(user, req.body.username, req.body.role, req.body.generalParentalConsent)
+    // 409: Conflict while updating
+    if (!await userUpdate(user, req.body)) {
+        return res.status(409).end()
+    }
+
     res.status(200).end()
 })
+
+// DELETE /user/:username - Lock and anonymize user
+router.delete("/:username", userRoles([Role.teacher, Role.admin]),
+    validateRequest({
+        params: z.object({
+            username: z.string(),
+        }),
+    }
+), async (req, res) => {
+    const user = await userByUsername(req.params.username)
+
+    // 404: User not found
+    if (!user) {
+        return res.status(404).end()
+    }
+
+    // 403: Not allowed to update user
+    if (!roleCanTarget(req.user.role, user.role)) {
+        return res.status(403).end()
+    }
+
+    await userUpdate(user, {
+        username: "deletedUser" + user.id,
+        password: "",
+        isActive: false
+    })
+    res.status(200).end()
+})
+
+// POST /user/:username/passwordReset - Reset user password
+router.post("/:username/passwordReset", userRoles([Role.teacher, Role.admin]), validateRequest({
+    params: z.object({
+        username: z.string(),
+    }),
+}), async (req, res) => {
+    const user = await userByUsername(req.params.username)
+
+    // 404: User not found
+    if (!user) {
+        return res.status(404).end()
+    }
+
+    // 403: Not allowed to update user
+    if (!roleCanTarget(req.user.role, user.role)) {
+        return res.status(403).end()
+    }
+
+    await userUpdate(user, {
+        password: await hashPassword(user.username),
+        changedPassword: false
+    })
+    res.status(200).end()
+})
+
+export default router

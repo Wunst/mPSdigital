@@ -17,7 +17,12 @@ export async function userByUsername(username: string): Promise<User | null> {
     })
 }
 
-export async function userCreate(username: string, role: Role, form: string | undefined): Promise<void> {
+export async function userCreate(username: string, role: Role, form: string | undefined): Promise<boolean> {
+    if (await userByUsername(username)) {
+        // Username is taken
+        return false
+    }
+
     await User.insert({
         username,
         role,
@@ -33,6 +38,8 @@ export async function userCreate(username: string, role: Role, form: string | un
             await userAddForm(username, form)
         }
     }
+
+    return true
 }
 
 export async function userAddForm(username: string, formName: string): Promise<boolean> {
@@ -71,10 +78,30 @@ export async function userList(): Promise<User[]> {
     })
 }
 
-export async function userUpdate(user: User, username: string | undefined,
-    role: Role | undefined, generalParentalConsent: boolean | undefined): Promise<boolean> {
+export interface IUserUpdateParams {
+    username?: string
+    role?: Role
+    generalParentalConsent?: boolean
+    password?: string
+    isActive?: boolean
+    changedPassword?: boolean
+}
+
+export async function userUpdate(user: User, {
+    username,
+    role,
+    generalParentalConsent,
+    password,
+    isActive,
+    changedPassword
+}: IUserUpdateParams): Promise<boolean> {
     if (role && roleIsTeacher(user.role) != roleIsTeacher(role)) {
         // Can't change role from student to teacher or admin.
+        return false
+    }
+
+    if (username && username != user.username && await userByUsername(username)) {
+        // Username is taken
         return false
     }
 
@@ -82,7 +109,10 @@ export async function userUpdate(user: User, username: string | undefined,
         id: user.id
     }, {
         username,
-        role
+        password,
+        role,
+        isActive,
+        changedPassword
     })
 
     await Student.update({

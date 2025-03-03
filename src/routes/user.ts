@@ -128,7 +128,7 @@ router.delete("/:username", userRoles([Role.teacher, Role.admin]),
 
     await userUpdate(user, {
         username: "deletedUser" + user.id,
-        password: "",
+        passwordHash: "",
         isActive: false
     })
     res.status(200).end()
@@ -153,7 +153,7 @@ router.post("/:username/passwordReset", userRoles([Role.teacher, Role.admin]), v
     }
 
     await userUpdate(user, {
-        password: await hashPassword(user.username),
+        passwordHash: await hashPassword(user.username),
         changedPassword: false
     })
     res.status(200).end()

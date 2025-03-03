@@ -83,16 +83,18 @@ export interface IUserUpdateParams {
     username?: string
     role?: Role
     generalParentalConsent?: boolean
-    password?: string
+    passwordHash?: string
     isActive?: boolean
     changedPassword?: boolean
+    settings?: string
 }
 
 export async function userUpdate(user: User, {
     username,
     role,
     generalParentalConsent,
-    password,
+    passwordHash,
+    settings,
     isActive,
     changedPassword
 }: IUserUpdateParams): Promise<boolean> {
@@ -110,10 +112,11 @@ export async function userUpdate(user: User, {
         id: user.id
     }, {
         username,
-        password,
+        password: passwordHash,
         role,
         isActive,
-        changedPassword
+        changedPassword,
+        settings
     })
 
     await Student.update({

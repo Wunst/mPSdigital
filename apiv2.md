@@ -2,6 +2,21 @@
 
 All endpoints are relative to `/api`.
 
+## Data structures
+
+### `Group`
+
+```json
+{
+  "id": "number",
+  "name": "string",
+  "onlinePinboard": "string", // nullable
+  "projectType": "mPS | Herausforderung",
+  "startDate": "Date",
+  "endDate": "Date" // nullable
+}
+```
+
 ## Authentication
 
 ### ![POST](https://img.shields.io/badge/POST-blue) `/login`
@@ -57,7 +72,7 @@ No data
   "username": "string",
   "role": "student | teacher | admin",
   "changedPassword": "boolean",
-  "group": "number" // nullable
+  "group": "Group" // Nullable
 }
 ```
 
@@ -180,7 +195,7 @@ Status code | Meaning
   "username": "string",
   "role": "student | teacher | admin",
   "form": "string",
-  "group": "number", // nullable
+  "group": "Group", // nullable
   "generalParentalCosent": "boolean",
   "specialParentalCosent": "boolean",
   "hasExcursion": "boolean"
@@ -259,6 +274,7 @@ Status code | Meaning
 200         | User info updated
 404         | No user with name
 403         | Teacher not allowed to change teacher or admin
+409         | Username is taken or invalid role change
 
 ### ![DELETE](https://img.shields.io/badge/DELETE-red) `/user/{username}`
 

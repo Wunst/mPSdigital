@@ -23,9 +23,7 @@ router.post("/", validateRequest({
 
     req.session.regenerate(() => {
         req.session.userId = user.id
-        res.status(200).json({
-            mustChangePassword: req.body.password === user.username
-        }).end()
+        res.status(200).end()
     })
 })
 

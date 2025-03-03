@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt"
 import { AppDataSource } from "../data-source"
 import { Form } from "../entity/form"
 import { Student } from "../entity/student"
@@ -121,4 +122,8 @@ export async function userUpdate(user: User, {
         generalParentalConsent
     })
     return true
+}
+
+export async function userCheckPassword(user: User, pw: string): Promise<boolean> {
+    return bcrypt.compare(pw, user.password)
 }
